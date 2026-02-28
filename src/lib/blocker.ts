@@ -2,6 +2,7 @@ import { existsSync, readFileSync, writeFileSync, unlinkSync } from "fs";
 import { execSync } from "child_process";
 import { homedir } from "os";
 import { join } from "path";
+import { blockPF, unblockPF, hasStalePFBlock } from "./pf";
 
 const HOSTS_PATH = "/etc/hosts";
 const START_MARKER = "# --- tunl start ---";
@@ -70,12 +71,14 @@ export function blockSites(sites: string[]): void {
   if (validSites.length === 0) return;
 
   writeFileSync(PID_PATH, String(process.pid));
+  try { blockPF(validSites); } catch {}
   blockHosts(validSites);
   flushDNS();
 }
 
 export function unblockSites(): void {
   unblockHosts();
+  try { unblockPF(); } catch {}
   flushDNS();
 
   try {
@@ -84,6 +87,10 @@ export function unblockSites(): void {
 }
 
 export function cleanupStaleBlocks(): void {
+  if (hasStalePFBlock()) {
+    try { unblockPF(); } catch {}
+  }
+
   if (!existsSync(PID_PATH)) return;
   const pid = parseInt(readFileSync(PID_PATH, "utf-8").trim());
   try {

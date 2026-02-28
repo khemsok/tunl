@@ -6,6 +6,7 @@ export type CliOptions = {
   showConfig: boolean;
   showStats: boolean;
   resetConfig: boolean;
+  uninstall: boolean;
 };
 
 export function parseArgs(argv: string[]): CliOptions {
@@ -17,6 +18,7 @@ export function parseArgs(argv: string[]): CliOptions {
     showConfig: false,
     showStats: false,
     resetConfig: false,
+    uninstall: false,
   };
 
   for (let i = 0; i < argv.length; i++) {
@@ -39,6 +41,8 @@ export function parseArgs(argv: string[]): CliOptions {
       opts.showStats = true;
     } else if (arg === "--reset") {
       opts.resetConfig = true;
+    } else if (arg === "--uninstall") {
+      opts.uninstall = true;
     } else if (arg === "--help" || arg === "-h") {
       printHelp();
       process.exit(0);
@@ -61,6 +65,7 @@ function printHelp(): void {
     tunl --stats                 Show focus stats and streaks
     tunl --config                Show current saved config
     tunl --reset                 Reset config (re-run onboarding)
+    tunl --uninstall             Remove all tunl system files (sudoers, config, DNS settings)
     tunl --help                  Show this help
 
   Controls:

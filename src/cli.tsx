@@ -1,11 +1,16 @@
 #!/usr/bin/env bun
+import { existsSync, unlinkSync } from "fs";
+import { homedir } from "os";
+import { join } from "path";
+
 import { createCliRenderer } from "@opentui/core";
 import { createRoot } from "@opentui/react";
-import { execSync } from "child_process";
 
 import { App } from "./app";
 import { loadConfig, saveConfig } from "./config";
-import { setupBrowserDNS } from "./lib/browser-dns";
+import { setupBrowserDNS, restoreBrowserDNS } from "./lib/browser-dns";
+import { unblockPF } from "./lib/pf";
+import { sudoersInstalled, installSudoers, removeSudoers } from "./lib/sudo-setup";
 import { parseArgs } from "./utils/args";
 import { formatMinutes } from "./utils/time";
 
@@ -23,7 +28,12 @@ async function main(): Promise<void> {
   }
 
   if (args.resetConfig) {
-    await resetConfig();
+    resetConfig();
+    process.exit(0);
+  }
+
+  if (args.uninstall) {
+    uninstall();
     process.exit(0);
   }
 
@@ -44,20 +54,21 @@ async function main(): Promise<void> {
       );
       console.log("  This only needs to happen once.\n");
     }
-  }
 
-  if (!args.noblock) {
-    console.log("\n  \u25C9 tunl \u2014 Terminal Focus Timer\n");
-    console.log("  tunl needs sudo access to block distracting sites.");
-    console.log("  You'll be prompted for your password.\n");
-    try {
-      execSync("sudo -v", { stdio: "inherit" });
-      console.log("\n  \u2713 Ready! Entering focus mode...\n");
-    } catch {
-      console.log(
-        "\n  \u2715 Could not get sudo access. Running without site blocking.\n",
-      );
-      args.noblock = true;
+    if (!sudoersInstalled()) {
+      console.log("\n  \u25C9 tunl \u2014 setup\n");
+      console.log("  tunl needs to install a passwordless sudo rule so it can");
+      console.log("  block sites without prompting you every time.");
+      console.log("  You'll enter your password once — never again after this.\n");
+      try {
+        installSudoers();
+        console.log("  \u2713 sudo rule installed. No more password prompts!\n");
+      } catch {
+        console.log(
+          "  \u2715 Could not install sudo rule. Running without site blocking.\n",
+        );
+        args.noblock = true;
+      }
     }
   }
 
@@ -103,10 +114,7 @@ function printConfig(): void {
   console.log(`  First run: ${config.isFirstRun}\n`);
 }
 
-async function resetConfig(): Promise<void> {
-  const { unlinkSync, existsSync } = await import("fs");
-  const { homedir } = await import("os");
-  const { join } = await import("path");
+function resetConfig(): void {
   const configPath = join(homedir(), ".tunl.json");
 
   if (existsSync(configPath)) {
@@ -115,6 +123,59 @@ async function resetConfig(): Promise<void> {
   } else {
     console.log("\n  No config found. Already fresh.\n");
   }
+}
+
+function uninstall(): void {
+  console.log("\n  \u25C9 tunl — uninstall\n");
+
+  // Remove sudoers rule
+  if (sudoersInstalled()) {
+    try {
+      removeSudoers();
+      console.log("  \u2713 Removed sudo rule (/etc/sudoers.d/tunl)");
+    } catch {
+      console.log("  \u2715 Could not remove sudo rule (may need manual sudo)");
+    }
+  } else {
+    console.log("  - No sudo rule found");
+  }
+
+  // Remove config
+  const configPath = join(homedir(), ".tunl.json");
+  if (existsSync(configPath)) {
+    unlinkSync(configPath);
+    console.log("  \u2713 Removed config (~/.tunl.json)");
+  } else {
+    console.log("  - No config found");
+  }
+
+  // Remove DNS setup flag
+  const dnsFlag = join(homedir(), ".tunl-dns-setup");
+  if (existsSync(dnsFlag)) {
+    unlinkSync(dnsFlag);
+    console.log("  \u2713 Removed DNS setup flag");
+  }
+
+  // Remove PID file
+  const pidPath = join(homedir(), ".tunl.pid");
+  if (existsSync(pidPath)) {
+    unlinkSync(pidPath);
+    console.log("  \u2713 Removed PID file");
+  }
+
+  // Clean up firewall rules (also removes pf token file)
+  try {
+    unblockPF();
+    console.log("  \u2713 Cleaned up firewall rules");
+  } catch {
+    console.log("  - No firewall rules to clean");
+  }
+
+  // Restore browser DNS settings
+  restoreBrowserDNS();
+  console.log("  \u2713 Restored browser DNS settings");
+
+  console.log("\n  All clean. Run `bun remove -g @khemsok/tunl` to finish.\n");
 }
 
 main().catch((err) => {
