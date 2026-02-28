@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tunl — enter the tunnel. block everything out.</title>
+<meta name="description" content="Terminal focus timer that blocks distracting websites and reveals animated ASCII art while you stay focused.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #08080f;
+  --bg-elevated: #0f0f1a;
+  --bg-card: #12121f;
+  --seafoam: #7FDBCA;
+  --ice: #E0F0FF;
+  --gold: #EED49F;
+  --pink: #F5BDE6;
+  --text: #CDD6F4;
+  --text-dim: #6C7086;
+  --text-muted: #45475A;
+  --border: #1e1e30;
+  --glow: rgba(127, 219, 202, 0.08);
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
+  font-family: 'IBM Plex Mono', monospace;
+  background: var(--bg);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Noise texture overlay ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ── Scanlines ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 9998;
+}
+
+a { color: var(--seafoam); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 1.2rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(8, 8, 15, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+nav .logo {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--seafoam);
+  letter-spacing: 0.15em;
+}
+
+nav .links {
+  display: flex;
+  gap: 2rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+nav .links a { color: var(--text-dim); transition: color 0.2s; }
+nav .links a:hover { color: var(--text); text-decoration: none; }
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  padding: 6rem 2rem 4rem;
+}
+
+.hero-stars {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: var(--ice);
+  border-radius: 50%;
+  animation: twinkle var(--dur, 3s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  opacity: 0;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0; }
+  50% { opacity: var(--brightness, 0.8); }
+}
+
+.hero-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(5rem, 15vw, 10rem);
+  font-weight: 400;
+  color: var(--ice);
+  letter-spacing: -0.03em;
+  line-height: 0.85;
+  margin-bottom: 1.5rem;
+  position: relative;
+  animation: fadeUp 1s ease-out;
+}
+
+.hero-title span {
+  color: var(--seafoam);
+}
+
+.hero-tagline {
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  color: var(--text-dim);
+  margin-bottom: 3rem;
+  letter-spacing: 0.08em;
+  animation: fadeUp 1s ease-out 0.15s both;
+}
+
+.hero-install {
+  animation: fadeUp 1s ease-out 0.3s both;
+  margin-bottom: 4rem;
+}
+
+.install-box {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.install-box:hover {
+  border-color: var(--seafoam);
+  box-shadow: 0 0 30px var(--glow);
+}
+
+.install-box .prompt { color: var(--text-muted); }
+.install-box .cmd { color: var(--seafoam); }
+.install-box .copy-hint {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.install-box:hover .copy-hint { opacity: 1; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── TERMINAL MOCKUP ── */
+.terminal-section {
+  animation: fadeUp 1s ease-out 0.45s both;
+}
+
+.terminal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  max-width: 680px;
+  margin: 0 auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+.terminal-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.02);
+  border-bottom: 1px solid var(--border);
+}
+
+.terminal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.terminal-dot.red { background: #ff5f57; }
+.terminal-dot.yellow { background: #febc2e; }
+.terminal-dot.green { background: #28c840; }
+
+.terminal-body {
+  padding: 1.5rem;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  min-height: 320px;
+  position: relative;
+}
+
+.terminal-body pre {
+  margin: 0;
+  font-family: 'IBM Plex Mono', monospace;
+  white-space: pre;
+}
+
+.t-seafoam { color: var(--seafoam); }
+.t-ice { color: var(--ice); }
+.t-gold { color: var(--gold); }
+.t-pink { color: var(--pink); }
+.t-dim { color: var(--text-dim); }
+.t-muted { color: var(--text-muted); }
+
+/* ── FEATURES ── */
+.features {
+  padding: 8rem 0;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.feature-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2rem;
+  transition: border-color 0.3s, transform 0.3s;
+}
+
+.feature-card:hover {
+  border-color: var(--text-muted);
+  transform: translateY(-2px);
+}
+
+.feature-icon {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.feature-title {
+  font-size: 0.95rem;
+  color: var(--ice);
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.feature-desc {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+/* ── ART SECTION ── */
+.art-section {
+  padding: 4rem 0 8rem;
+  text-align: center;
+}
+
+.art-section h2 {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  color: var(--ice);
+  margin-bottom: 1rem;
+  font-weight: 400;
+}
+
+.art-section .subtitle {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  margin-bottom: 3rem;
+}
+
+.art-themes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.art-theme {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: border-color 0.3s;
+}
+
+.art-theme:hover { border-color: var(--seafoam); }
+
+.art-theme pre {
+  font-size: 0.5rem;
+  line-height: 1.1;
+  color: var(--text-dim);
+  margin-bottom: 1rem;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.art-theme .theme-name {
+  font-size: 0.8rem;
+  color: var(--ice);
+}
+
+/* ── CONTROLS ── */
+.controls-section {
+  padding: 0 0 8rem;
+}
+
+.controls-section h2 {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  color: var(--ice);
+  margin-bottom: 2rem;
+  font-weight: 400;
+  text-align: center;
+}
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.control-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.control-key {
+  background: var(--bg);
+  border: 1px solid var(--text-muted);
+  border-radius: 4px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.8rem;
+  color: var(--ice);
+  min-width: 2.5rem;
+  text-align: center;
+}
+
+.control-desc {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+/* ── CTA ── */
+.cta {
+  padding: 6rem 0;
+  text-align: center;
+  border-top: 1px solid var(--border);
+}
+
+.cta h2 {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  color: var(--ice);
+  margin-bottom: 0.75rem;
+  font-weight: 400;
+}
+
+.cta p {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  margin-bottom: 2.5rem;
+}
+
+.cta-code {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.2rem 2.5rem;
+  display: inline-block;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+.cta-code .line {
+  display: block;
+  margin: 0.3rem 0;
+}
+
+/* ── FOOTER ── */
+footer {
+  padding: 3rem 2rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}
+
+.footer-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-links {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+footer a { color: var(--text-dim); transition: color 0.2s; }
+footer a:hover { color: var(--text); }
+
+/* ── SPLIT SECTION ── */
+.section-split {
+  padding: 6rem 2rem 3rem;
+}
+
+.split-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: start;
+}
+
+.split-grid > * {
+  min-width: 0;
+}
+
+.split-grid h2 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 2.2rem;
+  color: var(--ice);
+  font-weight: 400;
+  margin-bottom: 2rem;
+}
+
+/* ── SCROLL ANIMATIONS ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 720px) {
+  .container { padding: 0 2rem; }
+
+  nav { padding: 1rem 1.25rem; }
+  nav .links { gap: 1rem; font-size: 0.75rem; }
+
+  .hero { padding: 5rem 1.25rem 3rem; min-height: 100dvh; }
+  .hero-title { font-size: 4rem; }
+  .hero-tagline { font-size: 0.85rem; margin-bottom: 2rem; }
+  .hero-install { margin-bottom: 2.5rem; }
+
+  .install-box { font-size: 0.8rem; padding: 0.6rem 1rem; }
+
+  .terminal { max-width: 100%; }
+  .terminal-body { padding: 1rem; font-size: 0.65rem; min-height: 240px; overflow-x: auto; }
+
+  .split-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .section-split { padding: 3rem 2rem 2rem; }
+
+  .control-item { padding: 0.6rem 0.75rem; }
+  .control-key { font-size: 0.7rem; min-width: 2rem; padding: 0.15rem 0.4rem; }
+  .control-desc { font-size: 0.7rem; }
+
+  .cta { padding: 4rem 0; }
+  .cta h2 { font-size: 1.8rem; }
+  .cta-code { padding: 0.8rem 1.2rem; font-size: 0.8rem; }
+
+  .footer-inner { flex-direction: column; gap: 1rem; text-align: center; }
+  .footer-links { justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">tunl</div>
+  <div class="links">
+    <a href="#features">features</a>
+    <a href="#controls">controls</a>
+    <a href="https://github.com/khemsok/tunl">github</a>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-stars" id="stars"></div>
+
+  <h1 class="hero-title">t<span>u</span>nl</h1>
+  <p class="hero-tagline">enter the tunnel. block everything out.</p>
+
+  <div class="hero-install">
+    <div class="install-box" onclick="copyInstall()">
+      <span class="prompt">$</span>
+      <span class="cmd">bun add -g @khemsok/tunl</span>
+    </div>
+  </div>
+
+  <div class="terminal-section">
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="terminal-dot red"></div>
+        <div class="terminal-dot yellow"></div>
+        <div class="terminal-dot green"></div>
+      </div>
+      <div class="terminal-body">
+        <pre id="terminal-art"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section class="container reveal section-split" id="features">
+  <div class="split-grid">
+
+    <!-- Left: features as a clean list -->
+    <div>
+      <h2>what it does</h2>
+
+      <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+        <div style="display: flex; gap: 1rem; align-items: baseline;">
+          <span class="t-seafoam" style="font-size: 0.8rem;">01</span>
+          <div>
+            <div style="color: var(--ice); font-size: 0.85rem; margin-bottom: 0.25rem;">blocks distractions</div>
+            <div style="color: var(--text-dim); font-size: 0.75rem; line-height: 1.5;">twitter, reddit, youtube — blocked via /etc/hosts with automatic browser DNS bypass.</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 1rem; align-items: baseline;">
+          <span class="t-seafoam" style="font-size: 0.8rem;">02</span>
+          <div>
+            <div style="color: var(--ice); font-size: 0.85rem; margin-bottom: 0.25rem;">reveals animated art</div>
+            <div style="color: var(--text-dim); font-size: 0.75rem; line-height: 1.5;">scenes build in real-time. stars twinkle, windows flicker, buildings rise. multiple themes.</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 1rem; align-items: baseline;">
+          <span class="t-seafoam" style="font-size: 0.8rem;">03</span>
+          <div>
+            <div style="color: var(--ice); font-size: 0.85rem; margin-bottom: 0.25rem;">tracks your streaks</div>
+            <div style="color: var(--text-dim); font-size: 0.75rem; line-height: 1.5;">sessions, total focus time, day streaks. build the habit. check with <span class="t-seafoam">tunl --stats</span></div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 1rem; align-items: baseline;">
+          <span class="t-seafoam" style="font-size: 0.8rem;">04</span>
+          <div>
+            <div style="color: var(--ice); font-size: 0.85rem; margin-bottom: 0.25rem;">zero config</div>
+            <div style="color: var(--text-dim); font-size: 0.75rem; line-height: 1.5;">first run walks you through setup. after that, just type <span class="t-seafoam">tunl</span>.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: controls -->
+    <div id="controls">
+      <h2>controls</h2>
+
+      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <div class="control-item">
+          <span class="control-key">space</span>
+          <span class="control-desc">start / pause / resume</span>
+        </div>
+        <div class="control-item">
+          <span class="control-key">r</span>
+          <span class="control-desc">stop session</span>
+        </div>
+        <div class="control-item">
+          <span class="control-key">q</span>
+          <span class="control-desc">quit</span>
+        </div>
+        <div class="control-item">
+          <span class="control-key">+/-</span>
+          <span class="control-desc">adjust timer</span>
+        </div>
+        <div class="control-item">
+          <span class="control-key">s</span>
+          <span class="control-desc">edit blocked sites</span>
+        </div>
+        <div class="control-item">
+          <span class="control-key">t</span>
+          <span class="control-desc">change theme</span>
+        </div>
+        <div class="control-item">
+          <span class="control-key">i</span>
+          <span class="control-desc">view stats</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="cta container">
+  <h2>start focusing</h2>
+  <p>one command. that's it.</p>
+  <div class="cta-code">
+    <span class="line"><span class="t-muted">$</span> <span class="t-seafoam">bun add -g @khemsok/tunl</span></span>
+    <span class="line"><span class="t-muted">$</span> <span class="t-ice">tunl</span></span>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="t-seafoam" style="font-size: 1rem; font-weight: 600; letter-spacing: 0.15em;">tunl</span>
+      <span style="color: var(--text-muted); font-size: 0.75rem; margin-left: 0.75rem;">enter the tunnel. block everything out.</span>
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/khemsok/tunl">github</a>
+      <a href="https://www.npmjs.com/package/@khemsok/tunl">npm</a>
+      <span style="color: var(--text-muted);">MIT</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── Stars ──
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 80; i++) {
+  const star = document.createElement('div');
+  star.className = 'star';
+  star.style.left = Math.random() * 100 + '%';
+  star.style.top = Math.random() * 100 + '%';
+  star.style.setProperty('--dur', (2 + Math.random() * 4) + 's');
+  star.style.setProperty('--delay', (Math.random() * 5) + 's');
+  star.style.setProperty('--brightness', (0.3 + Math.random() * 0.7).toString());
+  if (Math.random() > 0.85) {
+    star.style.width = '3px';
+    star.style.height = '3px';
+  }
+  starsEl.appendChild(star);
+}
+
+// ── Terminal animation ──
+const termEl = document.getElementById('terminal-art');
+const frames = [];
+const W = 56, H = 16;
+
+function hash(x, y) {
+  let h = (x * 374761393 + y * 668265263 + 1274126177) | 0;
+  h = ((h ^ (h >> 13)) * 1274126177) | 0;
+  return (h ^ (h >> 16)) >>> 0;
+}
+
+let tick = 0;
+function renderFrame() {
+  const grid = [];
+  for (let r = 0; r < H; r++) {
+    grid[r] = [];
+    for (let c = 0; c < W; c++) {
+      grid[r][c] = { ch: ' ', cls: '' };
+    }
+  }
+
+  // Timer at top
+  const mins = 23 - Math.floor(tick / 75) % 24;
+  const secs = 59 - (tick % 60);
+  const timeStr = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+  const timerX = Math.floor((W - timeStr.length) / 2);
+  for (let i = 0; i < timeStr.length; i++) {
+    grid[0][timerX + i] = { ch: timeStr[i], cls: 't-ice' };
+  }
+
+  // Progress bar
+  const progress = ((tick % 375) / 375);
+  const barW = 30;
+  const barX = Math.floor((W - barW - 5) / 2);
+  const filled = Math.floor(progress * barW);
+  for (let i = 0; i < barW; i++) {
+    grid[1][barX + i] = { ch: i < filled ? '━' : '─', cls: i < filled ? 't-seafoam' : 't-muted' };
+  }
+  const pct = Math.round(progress * 100) + '%';
+  for (let i = 0; i < pct.length; i++) {
+    grid[1][barX + barW + 1 + i] = { ch: pct[i], cls: 't-dim' };
+  }
+
+  // Ground
+  for (let c = 0; c < W; c++) grid[H-1][c] = { ch: '─', cls: 't-dim' };
+
+  // Buildings
+  const buildings = [
+    {x:1, w:4, h:6}, {x:6, w:6, h:9}, {x:14, w:4, h:5},
+    {x:19, w:3, h:7}, {x:24, w:5, h:8}, {x:31, w:3, h:4},
+    {x:35, w:5, h:7}, {x:42, w:4, h:9}, {x:47, w:5, h:6},
+  ];
+
+  for (const b of buildings) {
+    for (let row = 0; row < b.h; row++) {
+      const gr = H - 2 - row;
+      if (gr < 3) continue;
+      for (let col = b.x; col < b.x + b.w && col < W; col++) {
+        if (row === b.h - 1) {
+          grid[gr][col] = { ch: col === b.x ? '┌' : col === b.x+b.w-1 ? '┐' : '─', cls: 't-dim' };
+        } else if (col === b.x || col === b.x + b.w - 1) {
+          grid[gr][col] = { ch: '│', cls: 't-dim' };
+        } else {
+          const s = hash(col, row);
+          const lit = ((tick + s) % 11) !== 0 && s % 3 < 2;
+          grid[gr][col] = { ch: '■', cls: lit ? 't-gold' : 't-muted' };
+        }
+      }
+    }
+  }
+
+  // Moon
+  const mx = 44, my = 3;
+  const moonChars = [
+    [1,'╭'], [2,'─'], [3,'─'], [4,'╮'],
+  ];
+  const moonMid = [
+    [0,'│'], [5,'│'],
+  ];
+  const moonBot = [
+    [1,'╰'], [2,'─'], [3,'─'], [4,'╯'],
+  ];
+  const mc = tick % 6 < 3 ? 't-ice' : 't-dim';
+  for (const [dx, ch] of moonChars) { if (mx+dx < W) grid[my][mx+dx] = {ch, cls: mc}; }
+  for (const [dx, ch] of moonMid) { if (mx+dx < W) grid[my+1][mx+dx] = {ch, cls: mc}; }
+  for (const [dx, ch] of moonBot) { if (mx+dx < W) grid[my+2][mx+dx] = {ch, cls: mc}; }
+
+  // Stars
+  for (let r = 2; r < H - 3; r++) {
+    for (let c = 0; c < W; c++) {
+      if (grid[r][c].ch !== ' ') continue;
+      const s = hash(c, r);
+      if (s % 100 < 6) {
+        const tw = (tick + s) % 7;
+        if (tw < 2) grid[r][c] = { ch: '✦', cls: 't-ice' };
+        else if (tw < 4) grid[r][c] = { ch: '·', cls: 't-dim' };
+      }
+    }
+  }
+
+  // Render
+  let html = '';
+  for (let r = 0; r < H; r++) {
+    for (let c = 0; c < W; c++) {
+      const cell = grid[r][c];
+      if (cell.cls) html += `<span class="${cell.cls}">${cell.ch}</span>`;
+      else html += cell.ch;
+    }
+    html += '\n';
+  }
+  termEl.innerHTML = html;
+  tick++;
+  requestAnimationFrame(() => setTimeout(renderFrame, 800));
+}
+renderFrame();
+
+// ── Copy install ──
+function copyInstall() {
+  navigator.clipboard.writeText('bun add -g @khemsok/tunl');
+  const box = document.querySelector('.install-box .cmd');
+  const orig = box.textContent;
+  box.textContent = 'copied!';
+  setTimeout(() => box.textContent = orig, 1500);
+}
+
+// ── Scroll reveal ──
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+reveals.forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
