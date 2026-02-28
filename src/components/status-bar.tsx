@@ -1,3 +1,5 @@
+import { COLORS } from "../theme";
+
 export function StatusBar({
   blockedCount,
   blockedSites,
@@ -18,44 +20,46 @@ export function StatusBar({
       width="100%"
       borderStyle="single"
       border={["top"]}
-      borderColor="#6C7086"
+      borderColor={COLORS.border}
     >
-      {/* Controls row — context-sensitive */}
       <box justifyContent="center" alignItems="center" width="100%">
         <text>
-          <span fg="#9399B2">q</span>
-          <span fg="#7F849C"> quit</span>
-          <span fg="#6C7086"> · </span>
-          <span fg="#9399B2">space</span>
-          <span fg="#7F849C">
+          <span fg={COLORS.textMuted}>q</span>
+          <span fg={COLORS.textDim}> quit</span>
+          <span fg={COLORS.border}> · </span>
+          <span fg={COLORS.textMuted}>space</span>
+          <span fg={COLORS.textDim}>
             {timerStatus === "idle" ? " start" :
              timerStatus === "running" ? " pause" :
              timerStatus === "paused" ? " resume" : " restart"}
           </span>
           {timerStatus === "idle" && (
             <>
-              <span fg="#6C7086"> · </span>
-              <span fg="#9399B2">+/-</span>
-              <span fg="#7F849C"> time</span>
-              <span fg="#6C7086"> · </span>
-              <span fg="#9399B2">s</span>
-              <span fg="#7F849C"> sites</span>
-              <span fg="#6C7086"> · </span>
-              <span fg="#9399B2">t</span>
-              <span fg="#7F849C"> theme</span>
+              <span fg={COLORS.border}> · </span>
+              <span fg={COLORS.textMuted}>+/-</span>
+              <span fg={COLORS.textDim}> time</span>
+              <span fg={COLORS.border}> · </span>
+              <span fg={COLORS.textMuted}>s</span>
+              <span fg={COLORS.textDim}> sites</span>
+              <span fg={COLORS.border}> · </span>
+              <span fg={COLORS.textMuted}>t</span>
+              <span fg={COLORS.textDim}> theme</span>
+              <span fg={COLORS.border}> · </span>
+              <span fg={COLORS.textMuted}>i</span>
+              <span fg={COLORS.textDim}> stats</span>
             </>
           )}
           {(timerStatus === "running" || timerStatus === "paused") && (
             <>
-              <span fg="#6C7086"> · </span>
-              <span fg="#9399B2">r</span>
-              <span fg="#7F849C"> stop</span>
+              <span fg={COLORS.border}> · </span>
+              <span fg={COLORS.textMuted}>r</span>
+              <span fg={COLORS.textDim}> stop</span>
             </>
           )}
           {timerStatus === "running" && blockedCount > 0 && (
             <>
-              <span fg="#6C7086"> · </span>
-              <span fg="#ED8796">✕ {blockedCount} blocked</span>
+              <span fg={COLORS.border}> · </span>
+              <span fg={COLORS.error}>✕ {blockedCount} blocked</span>
             </>
           )}
         </text>

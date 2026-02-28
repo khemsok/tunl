@@ -9,6 +9,10 @@ export type TunlConfig = {
   blockedSites: string[];
   theme: string;
   noblock: boolean;
+  totalSessions: number;
+  totalMinutesFocused: number;
+  lastSessionDate: string;
+  currentStreak: number;
 };
 
 export const DEFAULT_SITES = [
@@ -27,6 +31,10 @@ const DEFAULTS: TunlConfig = {
   blockedSites: DEFAULT_SITES,
   theme: "city",
   noblock: false,
+  totalSessions: 0,
+  totalMinutesFocused: 0,
+  lastSessionDate: "",
+  currentStreak: 0,
 };
 
 export function loadConfig(): TunlConfig & { isFirstRun: boolean } {

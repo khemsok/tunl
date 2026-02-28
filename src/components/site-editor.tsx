@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useKeyboard } from "@opentui/react";
 import { DEFAULT_SITES } from "../config";
+import { COLORS } from "../theme";
 
 export function SiteEditor({
   currentSites,
@@ -11,7 +12,6 @@ export function SiteEditor({
   onSave: (sites: string[]) => void;
   onCancel: () => void;
 }) {
-  // Show current sites only — defaults are only used on first onboarding
   const allSites = [...currentSites];
 
   const [enabled, setEnabled] = useState<Set<string>>(
@@ -25,7 +25,6 @@ export function SiteEditor({
   );
 
   const displaySites = [...allSites, ...customSites.filter((s) => !allSites.includes(s))];
-  // +1 for the "add new site" row
   const totalRows = displaySites.length + 1;
 
   useKeyboard((key) => {
@@ -51,7 +50,6 @@ export function SiteEditor({
         setInputBuffer((prev) => prev.slice(0, -1));
         return;
       }
-      // Regular character input
       if (key.name && key.name.length === 1 && !key.ctrl && !key.meta) {
         setInputBuffer((prev) => prev + key.name);
       }
@@ -72,7 +70,6 @@ export function SiteEditor({
           return next;
         });
       } else {
-        // "Add new" row
         setInputMode(true);
       }
     } else if (key.name === "return") {
@@ -92,34 +89,33 @@ export function SiteEditor({
       alignItems="center"
       justifyContent="center"
     >
-      <text fg="#7FDBCA">edit blocked sites</text>
+      <text fg={COLORS.accent}>edit blocked sites</text>
       <box height={1} />
-      <text fg="#B8C0E0">↑/↓ navigate · space toggle · enter save · esc cancel</text>
+      <text fg={COLORS.textBody}>↑/↓ navigate · space toggle · enter save · esc cancel</text>
       <box height={1} />
 
       {allDisplaySites.map((site, i) => {
         const isEnabled = enabled.has(site);
         const isCursor = i === cursor;
         const prefix = isEnabled ? "✓" : "○";
-        const prefixColor = isEnabled ? "#A6DA95" : "#9399B2";
-        const textColor = isCursor ? "#FFFFFF" : "#B8C0E0";
+        const prefixColor = isEnabled ? COLORS.success : COLORS.textMuted;
+        const textColor = isCursor ? COLORS.white : COLORS.textBody;
         const indicator = isCursor ? " ◀" : "";
 
         return (
           <text key={site}>
             <span fg={prefixColor}>{`  ${prefix} `}</span>
             <span fg={textColor}>{site}</span>
-            <span fg="#7FDBCA">{indicator}</span>
+            <span fg={COLORS.accent}>{indicator}</span>
           </text>
         );
       })}
 
-      {/* Add new site row */}
       <text>
-        <span fg={cursor === allDisplaySites.length ? "#FFFFFF" : "#B8C0E0"}>
+        <span fg={cursor === allDisplaySites.length ? COLORS.white : COLORS.textBody}>
           {"  + add new site"}
         </span>
-        <span fg="#7FDBCA">
+        <span fg={COLORS.accent}>
           {cursor === allDisplaySites.length ? " ◀" : ""}
         </span>
       </text>
@@ -128,15 +124,15 @@ export function SiteEditor({
         <>
           <box height={1} />
           <text>
-            <span fg="#B8C0E0">{"  site: "}</span>
-            <span fg="#FFFFFF">{inputBuffer}</span>
-            <span fg="#7FDBCA">{"_"}</span>
+            <span fg={COLORS.textBody}>{"  site: "}</span>
+            <span fg={COLORS.white}>{inputBuffer}</span>
+            <span fg={COLORS.accent}>{"_"}</span>
           </text>
         </>
       )}
 
       <box height={1} />
-      <text fg="#9399B2">
+      <text fg={COLORS.textMuted}>
         {`${enabled.size} site${enabled.size !== 1 ? "s" : ""} selected`}
       </text>
     </box>

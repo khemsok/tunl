@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useKeyboard } from "@opentui/react";
 import { LOGO, TAGLINE } from "../logo";
 import { DEFAULT_SITES } from "../config";
+import { COLORS } from "../theme";
 
 export type OnboardingResult = {
   blockedSites: string[];
@@ -48,11 +49,11 @@ export function Onboarding({
         width="100%"
         height="100%"
       >
-        <text fg="#7FDBCA">{LOGO.join("\n")}</text>
+        <text fg={COLORS.accent}>{LOGO.join("\n")}</text>
         <box height={1} />
-        <text fg="#6E738D">{TAGLINE}</text>
+        <text fg={COLORS.textBody}>{TAGLINE}</text>
         <box height={2} />
-        <text fg="#494D64">press space to begin setup</text>
+        <text fg={COLORS.textMuted}>press space to begin setup</text>
       </box>
     );
   }
@@ -66,20 +67,19 @@ export function Onboarding({
         width="100%"
         height="100%"
       >
-        <text fg="#7FDBCA">sites to block during focus:</text>
+        <text fg={COLORS.accent}>sites to block during focus:</text>
         <box height={1} />
         {DEFAULT_SITES.map((site, i) => (
-          <text key={i} fg="#EED49F">
+          <text key={i} fg={COLORS.warning}>
             {"  ✓ " + site}
           </text>
         ))}
         <box height={2} />
-        <text fg="#494D64">press space to confirm · use --block to add more</text>
+        <text fg={COLORS.textMuted}>press space to confirm · use --block to add more</text>
       </box>
     );
   }
 
-  // Step 2: Duration
   return (
     <box
       flexDirection="column"
@@ -88,12 +88,12 @@ export function Onboarding({
       width="100%"
       height="100%"
     >
-      <text fg="#7FDBCA">focus duration:</text>
+      <text fg={COLORS.accent}>focus duration:</text>
       <box height={1} />
-      <ascii-font text={String(duration)} font="block" color="#E0F0FF" />
-      <text fg="#6E738D">minutes</text>
+      <ascii-font text={String(duration)} font="block" color={COLORS.highlight} />
+      <text fg={COLORS.textLabel}>minutes</text>
       <box height={2} />
-      <text fg="#494D64">↑/↓ to adjust · space to start</text>
+      <text fg={COLORS.textMuted}>↑/↓ to adjust · space to start</text>
     </box>
   );
 }

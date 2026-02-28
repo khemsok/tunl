@@ -2,110 +2,60 @@
 import { createCliRenderer } from "@opentui/core";
 import { createRoot } from "@opentui/react";
 import { execSync } from "child_process";
+
 import { App } from "./app";
 import { loadConfig, saveConfig } from "./config";
+import { setupBrowserDNS } from "./lib/browser-dns";
+import { parseArgs } from "./utils/args";
+import { formatMinutes } from "./utils/time";
 
-// Parse CLI arguments
-function parseArgs(argv: string[]) {
-  const opts = {
-    duration: undefined as number | undefined,
-    noblock: false,
-    extraBlocks: [] as string[],
-    sites: undefined as string[] | undefined,
-    showConfig: false,
-    resetConfig: false,
-  };
-
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i];
-    if (arg === "--duration" && argv[i + 1]) {
-      opts.duration = parseInt(argv[i + 1], 10);
-      i++;
-    } else if (arg === "--noblock") {
-      opts.noblock = true;
-    } else if (arg === "--block" && argv[i + 1]) {
-      opts.extraBlocks = argv[i + 1].split(",").map((s) => s.trim());
-      i++;
-    } else if (arg === "--sites" && argv[i + 1]) {
-      opts.sites = argv[i + 1].split(",").map((s) => s.trim());
-      i++;
-    } else if (arg === "--config") {
-      opts.showConfig = true;
-    } else if (arg === "--reset") {
-      opts.resetConfig = true;
-    } else if (arg === "--help" || arg === "-h") {
-      console.log(`
-  tunl — Terminal Focus Timer with Art Reveal
-
-  Usage:
-    tunl                         Start with saved preferences
-    tunl --duration 45           45 minute session
-    tunl --block "site.com"      Add extra sites to block
-    tunl --sites "site1,site2"   Set the full blocklist (saves to config)
-    tunl --noblock               Timer + art only, no site blocking
-    tunl --config                Show current saved config
-    tunl --reset                 Reset config (re-run onboarding)
-    tunl --help                  Show this help
-
-  Controls:
-    space    Start / restart timer
-    q        Quit
-    +/-      Adjust time by 5 minutes (before starting)
-`);
-      process.exit(0);
-    }
-  }
-
-  return opts;
-}
-
-async function main() {
+async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
 
-  // --config: show current config and exit
+  if (args.showStats) {
+    printStats();
+    process.exit(0);
+  }
+
   if (args.showConfig) {
-    const config = loadConfig();
-    console.log("\n  ◉ tunl config (~/.tunl.json)\n");
-    console.log(`  Duration:  ${config.duration} minutes`);
-    console.log(`  Theme:     ${config.theme}`);
-    console.log(`  No-block:  ${config.noblock}`);
-    console.log(`  Sites:     ${config.blockedSites.join(", ")}`);
-    console.log(`  First run: ${config.isFirstRun}\n`);
+    printConfig();
     process.exit(0);
   }
 
-  // --reset: delete config to re-trigger onboarding
   if (args.resetConfig) {
-    const { unlinkSync, existsSync } = await import("fs");
-    const { homedir } = await import("os");
-    const { join } = await import("path");
-    const configPath = join(homedir(), ".tunl.json");
-    if (existsSync(configPath)) {
-      unlinkSync(configPath);
-      console.log("\n  ✓ Config reset. Next run will show onboarding.\n");
-    } else {
-      console.log("\n  No config found. Already fresh.\n");
-    }
+    await resetConfig();
     process.exit(0);
   }
 
-  // --sites: update the blocklist in config
   if (args.sites) {
     saveConfig({ blockedSites: args.sites });
-    console.log(`\n  ✓ Blocklist updated: ${args.sites.join(", ")}\n`);
+    console.log(`\n  \u2713 Blocklist updated: ${args.sites.join(", ")}\n`);
   }
 
-  // Sudo pre-check BEFORE entering alternate screen
   if (!args.noblock) {
-    console.log("\n  ◉ tunl — Terminal Focus Timer\n");
+    const needsRestart = setupBrowserDNS();
+    if (needsRestart) {
+      console.log("\n  \u25C9 tunl \u2014 first-time setup\n");
+      console.log(
+        "  Disabled browser built-in DNS so site blocking works.",
+      );
+      console.log(
+        "  Please restart your browser (Chrome/Arc/Edge) for this to take effect.",
+      );
+      console.log("  This only needs to happen once.\n");
+    }
+  }
+
+  if (!args.noblock) {
+    console.log("\n  \u25C9 tunl \u2014 Terminal Focus Timer\n");
     console.log("  tunl needs sudo access to block distracting sites.");
     console.log("  You'll be prompted for your password.\n");
     try {
       execSync("sudo -v", { stdio: "inherit" });
-      console.log("\n  ✓ Ready! Entering focus mode...\n");
+      console.log("\n  \u2713 Ready! Entering focus mode...\n");
     } catch {
       console.log(
-        "\n  ✕ Could not get sudo access. Running without site blocking.\n"
+        "\n  \u2715 Could not get sudo access. Running without site blocking.\n",
       );
       args.noblock = true;
     }
@@ -114,7 +64,11 @@ async function main() {
   const renderer = await createCliRenderer({
     useAlternateScreen: true,
     exitOnCtrlC: false,
+    useMouse: false,
+    enableMouseMovement: false,
   });
+
+  (globalThis as any).__tunl_renderer = renderer;
 
   const root = createRoot(renderer);
   root.render(
@@ -122,11 +76,55 @@ async function main() {
       initialDuration={args.duration}
       noblock={args.noblock}
       extraBlocks={args.extraBlocks}
-    />
+    />,
   );
 }
 
+function printStats(): void {
+  const config = loadConfig();
+  const timeStr = formatMinutes(config.totalMinutesFocused);
+
+  console.log("\n  \u25C9 tunl stats\n");
+  console.log(`  Sessions:      ${config.totalSessions}`);
+  console.log(`  Total focused: ${timeStr}`);
+  console.log(`  Day streak:    ${config.currentStreak}`);
+  console.log(`  Last session:  ${config.lastSessionDate || "never"}`);
+  console.log(`  Timer:         ${config.duration} min`);
+  console.log(`  Theme:         ${config.theme}\n`);
+}
+
+function printConfig(): void {
+  const config = loadConfig();
+  console.log("\n  \u25C9 tunl config (~/.tunl.json)\n");
+  console.log(`  Duration:  ${config.duration} minutes`);
+  console.log(`  Theme:     ${config.theme}`);
+  console.log(`  No-block:  ${config.noblock}`);
+  console.log(`  Sites:     ${config.blockedSites.join(", ")}`);
+  console.log(`  First run: ${config.isFirstRun}\n`);
+}
+
+async function resetConfig(): Promise<void> {
+  const { unlinkSync, existsSync } = await import("fs");
+  const { homedir } = await import("os");
+  const { join } = await import("path");
+  const configPath = join(homedir(), ".tunl.json");
+
+  if (existsSync(configPath)) {
+    unlinkSync(configPath);
+    console.log("\n  \u2713 Config reset. Next run will show onboarding.\n");
+  } else {
+    console.log("\n  No config found. Already fresh.\n");
+  }
+}
+
 main().catch((err) => {
+  const renderer = (globalThis as any).__tunl_renderer;
+  if (renderer) {
+    try {
+      renderer.destroy();
+    } catch {}
+  }
+  process.stdout.write("\x1b[?25h\x1b[?1049l");
   console.error("tunl error:", err);
   process.exit(1);
 });

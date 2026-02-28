@@ -1,5 +1,3 @@
-// City Skyline — Procedural, animated, constantly evolving
-
 export type ArtSegment = { text: string; fg: string };
 export type ArtLine = { segments: ArtSegment[] };
 export type ArtStage = { lines: ArtLine[] };

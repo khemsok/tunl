@@ -6,22 +6,13 @@ Enter the tunnel. Block everything out.
 
 ## Install
 
-Requires [Bun](https://bun.sh) (the TUI framework uses Bun's native FFI).
+Requires [Bun](https://bun.sh).
 
 ```bash
-# install bun if you don't have it
-curl -fsSL https://bun.sh/install | bash
-
-# run tunl
-bunx tunl
+bun add -g @khemsok/tunl
 ```
 
-Or install globally:
-
-```bash
-bun install -g tunl
-tunl
-```
+Then just run `tunl` from anywhere.
 
 ## What it does
 
@@ -46,11 +37,12 @@ The art is procedurally generated and animated every 800ms — stars twinkle, wi
 |-----|--------|
 | `space` | Start / pause / resume |
 | `r` | Stop session (back to idle) |
-| `q` | Quit app |
+| `q` | Quit |
 | `+/-` | Adjust time by 5 min (before starting) |
 | `s` | Edit blocked sites |
 | `t` | Change art theme |
-| `Ctrl+C` | Quit from any screen |
+| `i` | View focus stats |
+| `Ctrl+C` | Force quit from any screen |
 
 ## CLI Flags
 
@@ -60,24 +52,21 @@ tunl --duration 45           # 45 minute session
 tunl --block "site.com"      # add extra sites to block
 tunl --sites "a.com,b.com"   # set the full blocklist
 tunl --noblock               # timer + art only, no blocking
+tunl --stats                 # show focus stats and streaks
 tunl --config                # show saved config
 tunl --reset                 # reset config, re-run onboarding
+tunl --help                  # show usage help
 ```
 
 ## How blocking works
 
-tunl appends entries to `/etc/hosts` mapping blocked domains to `127.0.0.1`. This requires sudo access — you'll be prompted before the timer starts.
+tunl appends entries to `/etc/hosts` mapping blocked domains to `0.0.0.0`. This requires sudo access — you'll be prompted before the timer starts.
 
 Sites are unblocked when:
 - The session completes
 - You stop the session with `r`
 - You quit with `q` or `Ctrl+C`
 - If the process crashes, the next run detects stale entries and cleans up
-
-**Note:** If your browser uses DNS-over-HTTPS (Chrome, Arc, Firefox), you need to disable it for blocking to work:
-- **Chrome/Arc:** `chrome://settings/security` or `arc://settings/privacy` → turn off "Use secure DNS"
-- **Firefox:** Settings → Privacy & Security → DNS over HTTPS → Off
-- **Safari:** Works by default
 
 ## Config
 

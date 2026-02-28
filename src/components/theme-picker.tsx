@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useKeyboard } from "@opentui/react";
 import type { ArtTheme } from "../art/city";
+import { COLORS } from "../theme";
 
 const DESCRIPTIONS: Record<string, string> = {
   "City Skyline": "buildings rise, windows light up, moon glows, shooting stars streak across",
@@ -42,27 +43,27 @@ export function ThemePicker({
       alignItems="center"
       justifyContent="center"
     >
-      <text fg="#7FDBCA">choose art theme</text>
+      <text fg={COLORS.accent}>choose art theme</text>
       <box height={1} />
-      <text fg="#B8C0E0">↑/↓ navigate · space select · esc cancel</text>
+      <text fg={COLORS.textBody}>↑/↓ navigate · space select · esc cancel</text>
       <box height={2} />
 
       {themes.map((theme, i) => {
         const isCurrent = theme.name === currentTheme;
         const isCursor = i === cursor;
         const prefix = isCurrent ? "◉" : "○";
-        const prefixColor = isCurrent ? "#7FDBCA" : "#9399B2";
-        const textColor = isCursor ? "#FFFFFF" : "#B8C0E0";
+        const prefixColor = isCurrent ? COLORS.accent : COLORS.textMuted;
+        const textColor = isCursor ? COLORS.white : COLORS.textBody;
 
         return (
           <box key={theme.name} flexDirection="column" alignItems="center">
             <text>
               <span fg={prefixColor}>{`  ${prefix} `}</span>
               <span fg={textColor}>{theme.name}</span>
-              <span fg="#7FDBCA">{isCursor ? " ◀" : ""}</span>
+              <span fg={COLORS.accent}>{isCursor ? " ◀" : ""}</span>
             </text>
             {isCursor && (
-              <text fg="#7F849C">{"    " + (DESCRIPTIONS[theme.name] || "")}</text>
+              <text fg={COLORS.textDim}>{"    " + (DESCRIPTIONS[theme.name] || "")}</text>
             )}
           </box>
         );
