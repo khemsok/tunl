@@ -1,0 +1,44 @@
+{
+  "name": "tunl",
+  "version": "0.1.0",
+  "description": "Terminal focus timer that blocks distracting sites and progressively reveals animated ASCII art",
+  "type": "module",
+  "bin": {
+    "tunl": "./dist/cli.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "dev": "bun run src/cli.tsx",
+    "build": "bun build src/cli.tsx --outdir dist --target bun",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": [
+    "terminal",
+    "focus",
+    "timer",
+    "pomodoro",
+    "ascii-art",
+    "cli",
+    "productivity",
+    "website-blocker",
+    "tui"
+  ],
+  "license": "MIT",
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@opentui/react": "latest",
+    "@opentui/core": "latest"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^19.2.14",
+    "typescript": "^5.4"
+  }
+}
