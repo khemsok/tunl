@@ -1,6 +1,6 @@
 {
   "name": "@khemsok/tunl",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Terminal focus timer that blocks distracting sites and progressively reveals animated ASCII art",
   "type": "module",
   "bin": {

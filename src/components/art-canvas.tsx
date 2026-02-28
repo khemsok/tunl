@@ -1,9 +1,9 @@
 import type { ArtTheme } from "../art/city";
 import { NUM_STAGES } from "../art/city";
 
-// Art completes a full reveal cycle in ~5 minutes (375 ticks at 800ms each)
+// Art completes a full reveal cycle in ~2 minutes (150 ticks at 800ms each)
 // Then stays at full. This is independent of the timer duration.
-const FULL_CYCLE_TICKS = 375;
+const FULL_CYCLE_TICKS = 150;
 
 export function ArtCanvas({
   stage,
