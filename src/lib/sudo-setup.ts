@@ -1,9 +1,6 @@
-import { existsSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, writeFileSync } from "fs";
 import { execSync } from "child_process";
 import { userInfo } from "os";
-
-const SUDOERS_PATH = "/etc/sudoers.d/tunl";
-const SUDOERS_VERSION = "2"; // bump when rules change
 
 function buildRules(): string {
   const username = userInfo().username;
@@ -25,18 +22,10 @@ function buildRules(): string {
   ].join("\n");
 }
 
-/**
- * Checks if the tunl sudoers rule is installed and up to date.
- */
-export function sudoersInstalled(): boolean {
-  if (!existsSync(SUDOERS_PATH)) return false;
+const SUDOERS_PATH = "/etc/sudoers.d/tunl";
 
-  try {
-    const content = readFileSync(SUDOERS_PATH, "utf-8");
-    return content.includes(`# tunl-version: ${SUDOERS_VERSION}`);
-  } catch {
-    return false;
-  }
+export function sudoersInstalled(): boolean {
+  return existsSync(SUDOERS_PATH);
 }
 
 /**
@@ -46,15 +35,12 @@ export function sudoersInstalled(): boolean {
  */
 export function installSudoers(): void {
   const rules = buildRules();
-  const content = `# tunl - terminal focus timer\n# tunl-version: ${SUDOERS_VERSION}\n# allows site blocking without password prompts\n${rules}\n`;
+  const content = `# tunl - terminal focus timer\n# allows site blocking without password prompts\n${rules}\n`;
 
   const tmpPath = "/tmp/tunl-sudoers";
   writeFileSync(tmpPath, content, { mode: 0o440 });
 
-  // visudo -cf validates the sudoers file syntax
   execSync(`sudo visudo -cf ${tmpPath}`);
-
-  // Install to /etc/sudoers.d/ (this directory is included by default on macOS)
   execSync(`sudo install -m 0440 ${tmpPath} ${SUDOERS_PATH}`);
   execSync(`rm ${tmpPath}`);
 }

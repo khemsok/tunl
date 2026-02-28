@@ -43,17 +43,7 @@ async function main(): Promise<void> {
   }
 
   if (!args.noblock) {
-    const needsRestart = setupBrowserDNS();
-    if (needsRestart) {
-      console.log("\n  \u25C9 tunl \u2014 first-time setup\n");
-      console.log(
-        "  Disabled browser built-in DNS so site blocking works.",
-      );
-      console.log(
-        "  Please restart your browser (Chrome/Arc/Edge) for this to take effect.",
-      );
-      console.log("  This only needs to happen once.\n");
-    }
+    setupBrowserDNS();
 
     if (!sudoersInstalled()) {
       console.log("\n  \u25C9 tunl \u2014 setup\n");
