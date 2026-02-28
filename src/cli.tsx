@@ -10,7 +10,7 @@ import { App } from "./app";
 import { loadConfig, saveConfig } from "./config";
 import { setupBrowserDNS, restoreBrowserDNS } from "./lib/browser-dns";
 import { unblockPF } from "./lib/pf";
-import { sudoersInstalled, installSudoers, removeSudoers } from "./lib/sudo-setup";
+import { sudoersInstalled, sudoersNeedsUpdate, installSudoers, removeSudoers } from "./lib/sudo-setup";
 import { parseArgs } from "./utils/args";
 import { formatMinutes } from "./utils/time";
 
@@ -45,18 +45,10 @@ async function main(): Promise<void> {
   if (!args.noblock) {
     setupBrowserDNS();
 
-    if (!sudoersInstalled()) {
-      console.log("\n  \u25C9 tunl \u2014 setup\n");
-      console.log("  tunl needs to install a passwordless sudo rule so it can");
-      console.log("  block sites without prompting you every time.");
-      console.log("  You'll enter your password once — never again after this.\n");
+    if (!sudoersInstalled() || sudoersNeedsUpdate()) {
       try {
         installSudoers();
-        console.log("  \u2713 sudo rule installed. No more password prompts!\n");
       } catch {
-        console.log(
-          "  \u2715 Could not install sudo rule. Running without site blocking.\n",
-        );
         args.noblock = true;
       }
     }
