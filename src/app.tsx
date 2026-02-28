@@ -39,7 +39,7 @@ type AppProps = {
 };
 
 export function App({ initialDuration, noblock, extraBlocks }: AppProps) {
-  const config = loadConfig();
+  const [config, setConfig] = useState(() => loadConfig());
 
   const [screen, setScreen] = useState<Screen>(
     config.isFirstRun ? "onboarding" : "timer",
@@ -58,6 +58,7 @@ export function App({ initialDuration, noblock, extraBlocks }: AppProps) {
   const timer = useTimer(initialSeconds, () => {
     setScreen("completed");
     recordSession(Math.round(timer.totalSeconds / 60));
+    setConfig(loadConfig());
     stopBlocking();
   });
 
@@ -277,8 +278,8 @@ function TimerStatusMessage({
       <text>
         <span fg={COLORS.accent}>done. </span>
         <span fg={COLORS.textMuted}>
-          {config.totalSessions + 1} sessions ·{" "}
-          {config.totalMinutesFocused + Math.round(totalSeconds / 60)} min total
+          {config.totalSessions} sessions ·{" "}
+          {config.totalMinutesFocused} min total
           {config.currentStreak > 0
             ? ` · ${config.currentStreak} day streak`
             : ""}

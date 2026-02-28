@@ -21,16 +21,6 @@ Then just run `tunl` from anywhere.
 3. Progressively reveals animated ASCII art as you stay focused
 4. Unblocks everything when the session ends
 
-## Art Themes
-
-Three animated themes that evolve in real-time:
-
-- **City Skyline** — buildings rise, windows flicker on, moon glows, stars twinkle, shooting stars streak across, clouds drift
-- **Forest** — trees grow from trunks to full canopy, sun rises with rays, birds fly, butterflies flutter, flowers bloom
-- **Space** — stars fill the void, planet forms with rings, nebula swirls, rocket builds and launches with animated fire, comets streak past
-
-The art is procedurally generated and animated every 800ms — stars twinkle, windows flicker, neon signs pulse. Nothing is static.
-
 ## Controls
 
 | Key | Action |
@@ -57,27 +47,6 @@ tunl --config                # show saved config
 tunl --reset                 # reset config, re-run onboarding
 tunl --help                  # show usage help
 ```
-
-## How blocking works
-
-tunl appends entries to `/etc/hosts` mapping blocked domains to `0.0.0.0`. This requires sudo access — you'll be prompted before the timer starts.
-
-Sites are unblocked when:
-- The session completes
-- You stop the session with `r`
-- You quit with `q` or `Ctrl+C`
-- If the process crashes, the next run detects stale entries and cleans up
-
-## Config
-
-Preferences are saved to `~/.tunl.json` after first run. Edit with `tunl --config` to view, `tunl --reset` to start fresh, or press `s`/`t` in the app.
-
-## Tech Stack
-
-- **Runtime:** Bun
-- **Language:** TypeScript
-- **TUI Framework:** @opentui/react
-- **Art:** Procedurally generated, animated every 800ms
 
 ## License
 
