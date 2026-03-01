@@ -6,10 +6,8 @@ Enter the tunnel. Block everything out.
 
 ## Install
 
-Requires [Bun](https://bun.sh).
-
 ```bash
-bun add -g @khemsok/tunl
+npm install -g @khemsok/tunl
 ```
 
 Then just run `tunl` from anywhere.

@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 import { existsSync, unlinkSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";

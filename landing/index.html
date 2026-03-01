@@ -546,7 +546,7 @@ footer a:hover { color: var(--text); }
   <div class="hero-install">
     <div class="install-box" onclick="copyInstall()">
       <span class="prompt">$</span>
-      <span class="cmd">bun add -g @khemsok/tunl</span>
+      <span class="cmd">npm install -g @khemsok/tunl</span>
     </div>
   </div>
 
@@ -648,7 +648,7 @@ footer a:hover { color: var(--text); }
   <h2>start focusing</h2>
   <p>one command. that's it.</p>
   <div class="cta-code">
-    <span class="line"><span class="t-muted">$</span> <span class="t-seafoam">bun add -g @khemsok/tunl</span></span>
+    <span class="line"><span class="t-muted">$</span> <span class="t-seafoam">npm install -g @khemsok/tunl</span></span>
     <span class="line"><span class="t-muted">$</span> <span class="t-ice">tunl</span></span>
   </div>
 </section>
@@ -803,7 +803,7 @@ renderFrame();
 
 // ── Copy install ──
 function copyInstall() {
-  navigator.clipboard.writeText('bun add -g @khemsok/tunl');
+  navigator.clipboard.writeText('npm install -g @khemsok/tunl');
   const box = document.querySelector('.install-box .cmd');
   const orig = box.textContent;
   box.textContent = 'copied!';
