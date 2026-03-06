@@ -1,0 +1,164 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "General Sans";
+  src: url("/src/assets/fonts/GeneralSans-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "General Sans";
+  src: url("/src/assets/fonts/GeneralSans-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "General Sans";
+  src: url("/src/assets/fonts/GeneralSans-Semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "DM Mono";
+  src: url("/src/assets/fonts/DMMono-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "DM Mono";
+  src: url("/src/assets/fonts/DMMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Instrument Serif";
+  src: url("/src/assets/fonts/InstrumentSerif-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@theme {
+  --color-tunl-bg-deep: #0e1512;
+  --color-tunl-bg: #121a16;
+  --color-tunl-surface: #19231f;
+  --color-tunl-surface-h: #1f2d28;
+  --color-tunl-border: rgba(140, 180, 140, 0.06);
+  --color-tunl-border-h: rgba(140, 180, 140, 0.12);
+
+  --color-tunl-text: #d4dfd0;
+  --color-tunl-text-2: #8a9c8a;
+  --color-tunl-muted: #4a5c4e;
+  --color-tunl-dim: #2e3e33;
+
+  --color-tunl-sage: #7aad7a;
+  --color-tunl-sage-soft: rgba(122, 173, 122, 0.1);
+  --color-tunl-sage-glow: rgba(122, 173, 122, 0.18);
+  --color-tunl-sage-bright: #96c896;
+
+  --color-tunl-amber: #c4a05c;
+  --color-tunl-amber-soft: rgba(196, 160, 92, 0.1);
+  --color-tunl-amber-glow: rgba(196, 160, 92, 0.2);
+
+  --color-tunl-rose: #b07070;
+  --color-tunl-rose-soft: rgba(176, 112, 112, 0.1);
+
+  --font-sans: "General Sans", -apple-system, sans-serif;
+  --font-mono: "DM Mono", monospace;
+  --font-logo: "Instrument Serif", serif;
+
+  --animate-pulse-dot: pulse-dot 2s ease-in-out infinite;
+  --animate-breathe: breathe 3s ease-in-out infinite;
+  --animate-pop-in: pop-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-fade-in-up: fade-in-up 0.15s ease;
+  --animate-blink-colon: blink-colon 1.4s ease-in-out infinite;
+  --animate-bar-grow: bar-grow 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-hbar-grow: hbar-grow 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-orb-pulse: orb-pulse 4s ease-in-out infinite;
+
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
+    }
+  }
+
+  @keyframes breathe {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.5;
+      transform: scale(0.98);
+    }
+  }
+
+  @keyframes pop-in {
+    from {
+      transform: scale(0.4);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes blink-colon {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.2;
+    }
+  }
+
+  @keyframes bar-grow {
+    from {
+      height: 0;
+    }
+  }
+
+  @keyframes hbar-grow {
+    from {
+      width: 0;
+    }
+  }
+
+  @keyframes orb-pulse {
+    0%,
+    100% {
+      opacity: 0.5;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+      opacity: 0.8;
+      transform: translate(-50%, -50%) scale(1.05);
+    }
+  }
+}

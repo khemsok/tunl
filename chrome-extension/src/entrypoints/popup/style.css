@@ -1,0 +1,7 @@
+@import "../../../app.css";
+
+body {
+  width: 380px;
+  margin: 0;
+  overflow: hidden;
+}
