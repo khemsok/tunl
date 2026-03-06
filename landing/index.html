@@ -3,819 +3,1015 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>tunl — enter the tunnel. block everything out.</title>
-<meta name="description" content="Terminal focus timer that blocks distracting websites and reveals animated ASCII art while you stay focused.">
+<title>tunl — Block distracting sites while you focus</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="icon" type="image/x-icon" href="favicon.ico">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-  --bg: #08080f;
-  --bg-elevated: #0f0f1a;
-  --bg-card: #12121f;
-  --seafoam: #7FDBCA;
-  --ice: #E0F0FF;
-  --gold: #EED49F;
-  --pink: #F5BDE6;
-  --text: #CDD6F4;
-  --text-dim: #6C7086;
-  --text-muted: #45475A;
-  --border: #1e1e30;
-  --glow: rgba(127, 219, 202, 0.08);
-}
-
-html {
-  font-size: 16px;
-  scroll-behavior: smooth;
-  background: var(--bg);
-  color: var(--text);
-}
-
-body {
-  font-family: 'IBM Plex Mono', monospace;
-  background: var(--bg);
-  min-height: 100vh;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ── Scanlines ── */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0,0,0,0.03) 2px,
-    rgba(0,0,0,0.03) 4px
-  );
-  pointer-events: none;
-  z-index: 9998;
-}
-
-a { color: var(--seafoam); text-decoration: none; }
-a:hover { text-decoration: underline; }
-
-.container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-
-/* ── NAV ── */
-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  padding: 1.2rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(8, 8, 15, 0.85);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
-}
-
-nav .logo {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--seafoam);
-  letter-spacing: 0.15em;
-}
-
-nav .links {
-  display: flex;
-  gap: 2rem;
-  font-size: 0.8rem;
-  color: var(--text-dim);
-}
-
-nav .links a { color: var(--text-dim); transition: color 0.2s; }
-nav .links a:hover { color: var(--text); text-decoration: none; }
-
-/* ── HERO ── */
-.hero {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  position: relative;
-  padding: 6rem 2rem 4rem;
-}
-
-.hero-stars {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
-
-.star {
-  position: absolute;
-  width: 2px;
-  height: 2px;
-  background: var(--ice);
-  border-radius: 50%;
-  animation: twinkle var(--dur, 3s) ease-in-out infinite;
-  animation-delay: var(--delay, 0s);
-  opacity: 0;
-}
-
-@keyframes twinkle {
-  0%, 100% { opacity: 0; }
-  50% { opacity: var(--brightness, 0.8); }
-}
-
-.hero-title {
-  font-family: 'Instrument Serif', serif;
-  font-size: clamp(5rem, 15vw, 10rem);
-  font-weight: 400;
-  color: var(--ice);
-  letter-spacing: -0.03em;
-  line-height: 0.85;
-  margin-bottom: 1.5rem;
-  position: relative;
-  animation: fadeUp 1s ease-out;
-}
-
-.hero-title span {
-  color: var(--seafoam);
-}
-
-.hero-tagline {
-  font-size: clamp(0.9rem, 2vw, 1.1rem);
-  color: var(--text-dim);
-  margin-bottom: 3rem;
-  letter-spacing: 0.08em;
-  animation: fadeUp 1s ease-out 0.15s both;
-}
-
-.hero-install {
-  animation: fadeUp 1s ease-out 0.3s both;
-  margin-bottom: 4rem;
-}
-
-.install-box {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-  font-size: 0.9rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  cursor: pointer;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.install-box:hover {
-  border-color: var(--seafoam);
-  box-shadow: 0 0 30px var(--glow);
-}
-
-.install-box .prompt { color: var(--text-muted); }
-.install-box .cmd { color: var(--seafoam); }
-.install-box .copy-hint {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.install-box:hover .copy-hint { opacity: 1; }
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ── TERMINAL MOCKUP ── */
-.terminal-section {
-  animation: fadeUp 1s ease-out 0.45s both;
-}
-
-.terminal {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-  max-width: 680px;
-  margin: 0 auto;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-}
-
-.terminal-bar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 12px 16px;
-  background: rgba(255,255,255,0.02);
-  border-bottom: 1px solid var(--border);
-}
-
-.terminal-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-.terminal-dot.red { background: #ff5f57; }
-.terminal-dot.yellow { background: #febc2e; }
-.terminal-dot.green { background: #28c840; }
-
-.terminal-body {
-  padding: 1.5rem;
-  font-size: 0.82rem;
-  line-height: 1.6;
-  min-height: 320px;
-  position: relative;
-}
-
-.terminal-body pre {
-  margin: 0;
-  font-family: 'IBM Plex Mono', monospace;
-  white-space: pre;
-}
-
-.t-seafoam { color: var(--seafoam); }
-.t-ice { color: var(--ice); }
-.t-gold { color: var(--gold); }
-.t-pink { color: var(--pink); }
-.t-dim { color: var(--text-dim); }
-.t-muted { color: var(--text-muted); }
-
-/* ── FEATURES ── */
-.features {
-  padding: 8rem 0;
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-}
-
-.feature-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 2rem;
-  transition: border-color 0.3s, transform 0.3s;
-}
-
-.feature-card:hover {
-  border-color: var(--text-muted);
-  transform: translateY(-2px);
-}
-
-.feature-icon {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-  display: block;
-}
-
-.feature-title {
-  font-size: 0.95rem;
-  color: var(--ice);
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-}
-
-.feature-desc {
-  font-size: 0.8rem;
-  color: var(--text-dim);
-  line-height: 1.6;
-}
-
-/* ── ART SECTION ── */
-.art-section {
-  padding: 4rem 0 8rem;
-  text-align: center;
-}
-
-.art-section h2 {
-  font-family: 'Instrument Serif', serif;
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  color: var(--ice);
-  margin-bottom: 1rem;
-  font-weight: 400;
-}
-
-.art-section .subtitle {
-  color: var(--text-dim);
-  font-size: 0.9rem;
-  margin-bottom: 3rem;
-}
-
-.art-themes {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.art-theme {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 1.5rem;
-  text-align: center;
-  transition: border-color 0.3s;
-}
-
-.art-theme:hover { border-color: var(--seafoam); }
-
-.art-theme pre {
-  font-size: 0.5rem;
-  line-height: 1.1;
-  color: var(--text-dim);
-  margin-bottom: 1rem;
-  font-family: 'IBM Plex Mono', monospace;
-}
-
-.art-theme .theme-name {
-  font-size: 0.8rem;
-  color: var(--ice);
-}
-
-/* ── CONTROLS ── */
-.controls-section {
-  padding: 0 0 8rem;
-}
-
-.controls-section h2 {
-  font-family: 'Instrument Serif', serif;
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  color: var(--ice);
-  margin-bottom: 2rem;
-  font-weight: 400;
-  text-align: center;
-}
-
-.controls-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 0.75rem;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.control-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 1rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-}
-
-.control-key {
-  background: var(--bg);
-  border: 1px solid var(--text-muted);
-  border-radius: 4px;
-  padding: 0.2rem 0.6rem;
-  font-size: 0.8rem;
-  color: var(--ice);
-  min-width: 2.5rem;
-  text-align: center;
-}
-
-.control-desc {
-  font-size: 0.75rem;
-  color: var(--text-dim);
-}
-
-/* ── CTA ── */
-.cta {
-  padding: 6rem 0;
-  text-align: center;
-  border-top: 1px solid var(--border);
-}
-
-.cta h2 {
-  font-family: 'Instrument Serif', serif;
-  font-size: clamp(2rem, 5vw, 3rem);
-  color: var(--ice);
-  margin-bottom: 0.75rem;
-  font-weight: 400;
-}
-
-.cta p {
-  color: var(--text-dim);
-  font-size: 0.9rem;
-  margin-bottom: 2.5rem;
-}
-
-.cta-code {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 1.2rem 2.5rem;
-  display: inline-block;
-  font-size: 0.95rem;
-  margin-bottom: 1.5rem;
-}
-
-.cta-code .line {
-  display: block;
-  margin: 0.3rem 0;
-}
-
-/* ── FOOTER ── */
-footer {
-  padding: 3rem 2rem;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  border-top: 1px solid var(--border);
-}
-
-.footer-inner {
-  max-width: 900px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.footer-links {
-  display: flex;
-  gap: 1.5rem;
-  align-items: center;
-}
-
-footer a { color: var(--text-dim); transition: color 0.2s; }
-footer a:hover { color: var(--text); }
-
-/* ── SPLIT SECTION ── */
-.section-split {
-  padding: 6rem 2rem 3rem;
-}
-
-.split-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-  align-items: start;
-}
-
-.split-grid > * {
-  min-width: 0;
-}
-
-.split-grid h2 {
-  font-family: 'Instrument Serif', serif;
-  font-size: 2.2rem;
-  color: var(--ice);
-  font-weight: 400;
-  margin-bottom: 2rem;
-}
-
-/* ── SCROLL ANIMATIONS ── */
-.reveal {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-}
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ── RESPONSIVE ── */
-@media (max-width: 720px) {
-  .container { padding: 0 2rem; }
-
-  nav { padding: 1rem 1.25rem; }
-  nav .links { gap: 1rem; font-size: 0.75rem; }
-
-  .hero { padding: 5rem 1.25rem 3rem; min-height: 100dvh; }
-  .hero-title { font-size: 4rem; }
-  .hero-tagline { font-size: 0.85rem; margin-bottom: 2rem; }
-  .hero-install { margin-bottom: 2.5rem; }
-
-  .install-box { font-size: 0.8rem; padding: 0.6rem 1rem; }
-
-  .terminal { max-width: 100%; }
-  .terminal-body { padding: 1rem; font-size: 0.65rem; min-height: 240px; overflow-x: auto; }
-
-  .split-grid { grid-template-columns: 1fr; gap: 2.5rem; }
-  .section-split { padding: 3rem 2rem 2rem; }
-
-  .control-item { padding: 0.6rem 0.75rem; }
-  .control-key { font-size: 0.7rem; min-width: 2rem; padding: 0.15rem 0.4rem; }
-  .control-desc { font-size: 0.7rem; }
-
-  .cta { padding: 4rem 0; }
-  .cta h2 { font-size: 1.8rem; }
-  .cta-code { padding: 0.8rem 1.2rem; font-size: 0.8rem; }
-
-  .footer-inner { flex-direction: column; gap: 1rem; text-align: center; }
-  .footer-links { justify-content: center; }
-}
+  :root {
+    --sage: #7aad7a;
+    --sage-dim: #5a8a5a;
+    --amber: #c4a05c;
+    --rose: #b07070;
+    --bg: #080e08;
+    --surface: #0d150d;
+    --border: #182418;
+    --text: #c8d8c8;
+    --text-2: #8fa88f;
+    --dim: #3d523d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { overflow-x: hidden; }
+  .page { overflow: hidden; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Newsreader', Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  /* Grain — very subtle */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.3;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+
+  /* ─── Page enter ─── */
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .anim { animation: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .anim-d1 { animation-delay: 0.06s; }
+  .anim-d2 { animation-delay: 0.12s; }
+  .anim-d3 { animation-delay: 0.18s; }
+  .anim-d4 { animation-delay: 0.26s; }
+  .anim-d5 { animation-delay: 0.34s; }
+  .anim-d6 { animation-delay: 0.44s; }
+
+  /* ─── Layout ─── */
+  .page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 48px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ─── Top bar ─── */
+  .top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 0 0;
+    margin-bottom: 48px;
+  }
+
+  .logo {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 24px;
+    color: var(--sage);
+    text-decoration: none;
+  }
+
+  .logo-dot { opacity: 0.35; }
+
+  .install-link {
+    display: inline-flex;
+    align-items: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--sage);
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    padding: 8px 18px;
+    border: 1px solid var(--dim);
+    border-radius: 100px;
+    transition: border-color 0.3s, background 0.2s;
+  }
+
+  .install-link:hover {
+    border-color: var(--sage-dim);
+    background: rgba(122,173,122,0.05);
+  }
+
+  .chrome-icon {
+    flex-shrink: 0;
+    margin-right: 6px;
+  }
+
+  /* ─── Hero ─── */
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 48px;
+    align-items: center;
+    margin-bottom: 56px;
+  }
+
+  .hero-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hero h1 {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 54px;
+    line-height: 1.08;
+    color: var(--text);
+    letter-spacing: -0.5px;
+    margin-bottom: 22px;
+  }
+
+  .hero h1 em {
+    color: var(--sage);
+    font-style: italic;
+  }
+
+  .hero-desc {
+    font-size: 18px;
+    line-height: 1.65;
+    color: var(--text-2);
+    font-weight: 300;
+    max-width: 440px;
+    margin-bottom: 30px;
+  }
+
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--bg);
+    background: var(--sage);
+    text-decoration: none;
+    letter-spacing: 0.3px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    transition: background 0.2s, transform 0.15s;
+    width: fit-content;
+  }
+
+  .hero-cta:hover {
+    background: var(--sage-dim);
+    transform: translateY(-1px);
+  }
+
+  /* ─── Mockup — stacked carousel ─── */
+  .mockup-area {
+    width: 320px;
+    height: 380px;
+    position: relative;
+  }
+
+  .mockup-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    transform-origin: top right;
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+
+  .carousel {
+    position: relative;
+    width: 280px;
+    height: 340px;
+    perspective: 900px;
+    margin-bottom: 14px;
+  }
+
+  .mock {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    width: 280px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: center bottom;
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+  }
+
+  /* Stacked positions: front, middle, back */
+  .mock[data-pos="0"] {
+    z-index: 3;
+    transform: translateZ(0) scale(1);
+    opacity: 1;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(122,173,122,0.03);
+  }
+
+  .mock[data-pos="1"] {
+    z-index: 2;
+    transform: translateX(14px) translateY(10px) scale(0.95);
+    opacity: 0.4;
+    filter: brightness(0.6);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  }
+
+  .mock[data-pos="2"] {
+    z-index: 1;
+    transform: translateX(28px) translateY(20px) scale(0.90);
+    opacity: 0.2;
+    filter: brightness(0.4);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  }
+
+  /* Exiting card flies out left */
+  .mock[data-pos="exit"] {
+    z-index: 4;
+    transform: translateX(-120%) scale(0.9) rotateY(8deg);
+    opacity: 0;
+    transition: all 0.5s cubic-bezier(0.55, 0, 1, 0.45);
+    pointer-events: none;
+  }
+
+  /* Labels under the stack */
+  .carousel-labels {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .carousel-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--dim);
+    text-transform: uppercase;
+    transition: color 0.3s;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 4px 0;
+    position: relative;
+  }
+
+  .carousel-label.active {
+    color: var(--sage);
+  }
+
+  .carousel-label.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--sage);
+    opacity: 0.4;
+  }
+
+  .mock-header {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mock-logo {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--sage);
+  }
+
+  .mock-logo span { opacity: 0.35; }
+
+  .mock-streak {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--amber);
+    background: rgba(196,160,92,0.06);
+    border: 1px solid rgba(196,160,92,0.12);
+    padding: 2px 8px;
+    border-radius: 100px;
+  }
+
+  .mock-body {
+    padding: 20px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .mock-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 34px;
+    font-weight: 300;
+    color: var(--text);
+    letter-spacing: 2px;
+    margin-bottom: 2px;
+  }
+
+  .mock-time-colon {
+    color: var(--dim);
+    animation: blink 1.5s step-end infinite;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .mock-sublabel {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    font-weight: 500;
+    color: var(--dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .mock-pills {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 14px;
+  }
+
+  .mock-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 5px 12px;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--dim);
+    border: 1px solid var(--border);
+  }
+
+  .mock-pill.on {
+    background: var(--sage);
+    color: var(--bg);
+    border-color: var(--sage);
+  }
+
+  .mock-btn {
+    width: 100%;
+    padding: 9px;
+    background: var(--amber);
+    color: var(--bg);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+
+  .mock-nav {
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  .mock-nav-item {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    color: var(--dim);
+    letter-spacing: 0.5px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .mock-nav-item.on { color: var(--sage); }
+
+  .mock-nav-dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  /* Stats mock */
+  .mock-stats .mock-body {
+    padding: 16px 14px;
+    align-items: stretch;
+  }
+
+  .mock-week-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    color: var(--dim);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .mock-week-total {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 300;
+    color: var(--text);
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+  }
+
+  .mock-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 56px;
+    margin-bottom: 14px;
+  }
+
+  .mock-bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    height: 100%;
+    justify-content: flex-end;
+  }
+
+  .mock-bar {
+    width: 100%;
+    border-radius: 3px 3px 1px 1px;
+    background: var(--sage);
+    opacity: 0.6;
+    min-height: 3px;
+  }
+
+  .mock-bar.now { opacity: 1; }
+  .mock-bar.off { background: var(--border); opacity: 1; }
+
+  .mock-bar-day {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    color: var(--dim);
+  }
+
+  .mock-bar-col.now .mock-bar-day { color: var(--sage); }
+
+  .mock-streak-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px;
+    background: rgba(196,160,92,0.04);
+    border: 1px solid rgba(196,160,92,0.08);
+    border-radius: 8px;
+  }
+
+  .mock-streak-row span {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--amber);
+    letter-spacing: 0.3px;
+  }
+
+  /* Schedule mock */
+  .mock-sched .mock-body {
+    padding: 10px;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .sched-add {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    text-align: center;
+    padding: 8px;
+    border: 1px dashed var(--border);
+    border-radius: 9px;
+    letter-spacing: 0.3px;
+  }
+
+  .sched-card {
+    background: rgba(122,173,122,0.04);
+    border: 1px solid rgba(122,173,122,0.1);
+    border-radius: 9px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .sched-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .sched-card-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .sched-card-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: 0.2px;
+  }
+
+  .sched-card-info {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    color: var(--dim);
+    letter-spacing: 0.3px;
+  }
+
+  .sched-card-days {
+    display: flex;
+    gap: 3px;
+  }
+
+  .sched-day {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-family: 'DM Mono', monospace;
+    font-size: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--dim);
+    border: 1px solid var(--border);
+  }
+
+  .sched-day.on {
+    background: var(--sage);
+    color: var(--bg);
+    border-color: var(--sage);
+  }
+
+  .sched-toggle {
+    width: 28px;
+    height: 16px;
+    border-radius: 100px;
+    background: var(--border);
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .sched-toggle.on { background: var(--sage); }
+
+  .sched-toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--bg);
+    transition: transform 0.2s;
+  }
+
+  .sched-toggle.on::after { transform: translateX(12px); }
+
+  /* ─── Feature list ─── */
+  .features {
+    margin-bottom: 24px;
+  }
+
+  .features-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .feature-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 24px;
+    padding: 18px 0;
+    border-top: 1px solid var(--border);
+    align-items: baseline;
+  }
+
+  .feature-row:last-child {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .feature-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--sage);
+    letter-spacing: 0.3px;
+  }
+
+  .feature-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-2);
+    font-weight: 300;
+  }
+
+  /* ─── Bottom ─── */
+  .bottom {
+    margin-top: auto;
+    padding: 40px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .bottom-left {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.3px;
+  }
+
+  .bottom-links {
+    display: flex;
+    gap: 20px;
+  }
+
+  .bottom-links a {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .bottom-links a:hover { color: var(--text-2); }
+
+  /* ─── Large screens ─── */
+  @media (min-width: 1200px) {
+    .page {
+      max-width: 1080px;
+      padding: 0 64px;
+    }
+    .hero {
+      grid-template-columns: 1fr 340px;
+      gap: 56px;
+    }
+    .hero h1 { font-size: 58px; }
+    .hero-desc { font-size: 19px; max-width: 460px; }
+    .mockup-area { width: 340px; height: 380px; }
+    .feature-row { grid-template-columns: 160px 1fr; gap: 32px; }
+    .feature-text { font-size: 15px; }
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 720px) {
+    .page { padding: 0 20px; }
+    .top { margin-bottom: 48px; }
+    .hero {
+      grid-template-columns: 1fr;
+      gap: 36px;
+      text-align: center;
+    }
+    .hero-text { align-items: center; }
+    .hero h1 { font-size: 36px; }
+    .hero-desc { font-size: 16px; max-width: 100%; }
+    .mockup-area {
+      width: 100%;
+      height: 320px;
+      display: flex;
+      justify-content: center;
+    }
+    .mockup-inner {
+      transform: scale(0.88);
+      transform-origin: top center;
+      position: relative;
+    }
+    .carousel-labels { justify-content: center; }
+    .feature-row {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+    .bottom {
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+      text-align: center;
+    }
+    .bottom-links { justify-content: center; }
+  }
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="logo">tunl</div>
-  <div class="links">
-    <a href="#features">features</a>
-    <a href="#controls">controls</a>
-    <a href="https://github.com/khemsok/tunl">github</a>
+<div class="page">
+
+  <!-- Top -->
+  <div class="top anim">
+    <a href="#" class="logo">tunl<span class="logo-dot">.</span></a>
+    <a href="#" class="install-link"><svg class="chrome-icon" width="14" height="14" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="24" cy="24" r="8" fill="none" stroke="currentColor" stroke-width="2.5"/><line x1="24" y1="2" x2="24" y2="16" stroke="currentColor" stroke-width="2.5"/><line x1="4.9" y1="35" x2="17" y2="28" stroke="currentColor" stroke-width="2.5"/><line x1="43.1" y1="35" x2="31" y2="28" stroke="currentColor" stroke-width="2.5"/></svg>Add to Chrome</a>
   </div>
-</nav>
 
-<!-- ── HERO ── -->
-<section class="hero">
-  <div class="hero-stars" id="stars"></div>
-
-  <h1 class="hero-title">t<span>u</span>nl</h1>
-  <p class="hero-tagline">enter the tunnel. block everything out.</p>
-
-  <div class="hero-install">
-    <div class="install-box" onclick="copyInstall()">
-      <span class="prompt">$</span>
-      <span class="cmd">npm install -g @khemsok/tunl</span>
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-text">
+      <h1 class="anim anim-d1">Block the noise,<br>find your <em>tunnel</em></h1>
+      <p class="hero-desc anim anim-d2">
+        A Chrome extension that blocks distracting sites during focus sessions.
+        Set schedules, build streaks, and make quitting hard on purpose.
+      </p>
+      <a href="#" class="hero-cta anim anim-d3"><svg class="chrome-icon" width="16" height="16" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="24" cy="24" r="8" fill="none" stroke="currentColor" stroke-width="2.5"/><line x1="24" y1="2" x2="24" y2="16" stroke="currentColor" stroke-width="2.5"/><line x1="4.9" y1="35" x2="17" y2="28" stroke="currentColor" stroke-width="2.5"/><line x1="43.1" y1="35" x2="31" y2="28" stroke="currentColor" stroke-width="2.5"/></svg>Add to Chrome — it's free</a>
     </div>
-  </div>
 
-  <div class="terminal-section">
-    <div class="terminal">
-      <div class="terminal-bar">
-        <div class="terminal-dot red"></div>
-        <div class="terminal-dot yellow"></div>
-        <div class="terminal-dot green"></div>
+    <!-- Mockups — stacked carousel -->
+    <div class="mockup-area anim anim-d3">
+    <div class="mockup-inner">
+    <div class="carousel">
+    <!-- Timer screen -->
+    <div class="mock" data-mock="timer" data-pos="0">
+      <div class="mock-header">
+        <span class="mock-logo">tunl<span>.</span></span>
+        <span class="mock-streak">🔥 12 days</span>
       </div>
-      <div class="terminal-body">
-        <pre id="terminal-art"></pre>
+      <div class="mock-body">
+        <div class="mock-time">25<span class="mock-time-colon">:</span>00</div>
+        <div class="mock-sublabel">Set Duration</div>
+        <div class="mock-pills">
+          <span class="mock-pill">15</span>
+          <span class="mock-pill on">25</span>
+          <span class="mock-pill">45</span>
+          <span class="mock-pill">60</span>
+        </div>
+        <div class="mock-btn">Start Focus</div>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- ── HOW IT WORKS ── -->
-<section class="container reveal section-split" id="features">
-  <div class="split-grid">
-
-    <!-- Left: features as a clean list -->
-    <div>
-      <h2>what it does</h2>
-
-      <div style="display: flex; flex-direction: column; gap: 1.2rem;">
-        <div style="display: flex; gap: 1rem; align-items: baseline;">
-          <span class="t-seafoam" style="font-size: 0.8rem;">01</span>
-          <div>
-            <div style="color: var(--ice); font-size: 0.85rem; margin-bottom: 0.25rem;">blocks distractions</div>
-            <div style="color: var(--text-dim); font-size: 0.75rem; line-height: 1.5;">twitter, reddit, youtube — blocked while you focus. customize your blocklist anytime.</div>
-          </div>
-        </div>
-        <div style="display: flex; gap: 1rem; align-items: baseline;">
-          <span class="t-seafoam" style="font-size: 0.8rem;">02</span>
-          <div>
-            <div style="color: var(--ice); font-size: 0.85rem; margin-bottom: 0.25rem;">reveals animated art</div>
-            <div style="color: var(--text-dim); font-size: 0.75rem; line-height: 1.5;">scenes build in real-time. stars twinkle, windows flicker, buildings rise. multiple themes.</div>
-          </div>
-        </div>
-        <div style="display: flex; gap: 1rem; align-items: baseline;">
-          <span class="t-seafoam" style="font-size: 0.8rem;">03</span>
-          <div>
-            <div style="color: var(--ice); font-size: 0.85rem; margin-bottom: 0.25rem;">tracks your streaks</div>
-            <div style="color: var(--text-dim); font-size: 0.75rem; line-height: 1.5;">sessions, total focus time, day streaks. build the habit. check with <span class="t-seafoam">tunl --stats</span></div>
-          </div>
-        </div>
-        <div style="display: flex; gap: 1rem; align-items: baseline;">
-          <span class="t-seafoam" style="font-size: 0.8rem;">04</span>
-          <div>
-            <div style="color: var(--ice); font-size: 0.85rem; margin-bottom: 0.25rem;">zero config</div>
-            <div style="color: var(--text-dim); font-size: 0.75rem; line-height: 1.5;">first run walks you through setup. after that, just type <span class="t-seafoam">tunl</span>.</div>
-          </div>
-        </div>
+      <div class="mock-nav">
+        <div class="mock-nav-item"><div class="mock-nav-dot"></div>Stats</div>
+        <div class="mock-nav-item on"><div class="mock-nav-dot"></div>Timer</div>
+        <div class="mock-nav-item"><div class="mock-nav-dot"></div>Schedule</div>
+        <div class="mock-nav-item"><div class="mock-nav-dot"></div>Settings</div>
       </div>
     </div>
 
-    <!-- Right: controls -->
-    <div id="controls">
-      <h2>controls</h2>
-
-      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-        <div class="control-item">
-          <span class="control-key">space</span>
-          <span class="control-desc">start / pause / resume</span>
+    <!-- Schedule screen -->
+    <div class="mock mock-sched" data-mock="schedule" data-pos="1">
+      <div class="mock-header">
+        <span class="mock-logo">tunl<span>.</span></span>
+      </div>
+      <div class="mock-body">
+        <div class="sched-add">+ Add Schedule</div>
+        <div class="sched-card">
+          <div class="sched-card-top">
+            <div class="sched-card-left">
+              <div class="sched-card-name">Work Hours</div>
+              <div class="sched-card-info">9:00 AM — 5:00 PM</div>
+            </div>
+            <div class="sched-toggle on"></div>
+          </div>
+          <div class="sched-card-days">
+            <span class="sched-day">S</span>
+            <span class="sched-day on">M</span>
+            <span class="sched-day on">T</span>
+            <span class="sched-day on">W</span>
+            <span class="sched-day on">T</span>
+            <span class="sched-day on">F</span>
+            <span class="sched-day">S</span>
+          </div>
         </div>
-        <div class="control-item">
-          <span class="control-key">r</span>
-          <span class="control-desc">stop session</span>
+        <div class="sched-card">
+          <div class="sched-card-top">
+            <div class="sched-card-left">
+              <div class="sched-card-name">Morning Routine</div>
+              <div class="sched-card-info">6:00 AM — 9:00 AM</div>
+            </div>
+            <div class="sched-toggle on"></div>
+          </div>
+          <div class="sched-card-days">
+            <span class="sched-day on">S</span>
+            <span class="sched-day on">M</span>
+            <span class="sched-day on">T</span>
+            <span class="sched-day on">W</span>
+            <span class="sched-day on">T</span>
+            <span class="sched-day on">F</span>
+            <span class="sched-day on">S</span>
+          </div>
         </div>
-        <div class="control-item">
-          <span class="control-key">q</span>
-          <span class="control-desc">quit</span>
+        <div class="sched-card">
+          <div class="sched-card-top">
+            <div class="sched-card-left">
+              <div class="sched-card-name">Weekend Focus</div>
+              <div class="sched-card-info">10:00 AM — 2:00 PM</div>
+            </div>
+            <div class="sched-toggle on"></div>
+          </div>
+          <div class="sched-card-days">
+            <span class="sched-day on">S</span>
+            <span class="sched-day">M</span>
+            <span class="sched-day">T</span>
+            <span class="sched-day">W</span>
+            <span class="sched-day">T</span>
+            <span class="sched-day">F</span>
+            <span class="sched-day on">S</span>
+          </div>
         </div>
-        <div class="control-item">
-          <span class="control-key">+/-</span>
-          <span class="control-desc">adjust timer</span>
-        </div>
-        <div class="control-item">
-          <span class="control-key">s</span>
-          <span class="control-desc">edit blocked sites</span>
-        </div>
-        <div class="control-item">
-          <span class="control-key">t</span>
-          <span class="control-desc">change theme</span>
-        </div>
-        <div class="control-item">
-          <span class="control-key">i</span>
-          <span class="control-desc">view stats</span>
-        </div>
+      </div>
+      <div class="mock-nav">
+        <div class="mock-nav-item"><div class="mock-nav-dot"></div>Timer</div>
+        <div class="mock-nav-item"><div class="mock-nav-dot"></div>Stats</div>
+        <div class="mock-nav-item on"><div class="mock-nav-dot"></div>Schedule</div>
+        <div class="mock-nav-item"><div class="mock-nav-dot"></div>Settings</div>
       </div>
     </div>
 
-  </div>
-</section>
-
-<!-- ── CTA ── -->
-<section class="cta container">
-  <h2>start focusing</h2>
-  <p>one command. that's it.</p>
-  <div class="cta-code">
-    <span class="line"><span class="t-muted">$</span> <span class="t-seafoam">npm install -g @khemsok/tunl</span></span>
-    <span class="line"><span class="t-muted">$</span> <span class="t-ice">tunl</span></span>
-  </div>
-</section>
-
-<footer>
-  <div class="footer-inner">
-    <div class="footer-brand">
-      <span class="t-seafoam" style="font-size: 1rem; font-weight: 600; letter-spacing: 0.15em;">tunl</span>
-      <span style="color: var(--text-muted); font-size: 0.75rem; margin-left: 0.75rem;">enter the tunnel. block everything out.</span>
+    <!-- Stats screen -->
+    <div class="mock mock-stats" data-mock="stats" data-pos="2">
+      <div class="mock-header">
+        <span class="mock-logo">tunl<span>.</span></span>
+      </div>
+      <div class="mock-body">
+        <div class="mock-week-label">This week</div>
+        <div class="mock-week-total">4h 12m</div>
+        <div class="mock-bars">
+          <div class="mock-bar-col">
+            <div class="mock-bar" style="height: 55%;"></div>
+            <div class="mock-bar-day">M</div>
+          </div>
+          <div class="mock-bar-col">
+            <div class="mock-bar" style="height: 80%;"></div>
+            <div class="mock-bar-day">T</div>
+          </div>
+          <div class="mock-bar-col">
+            <div class="mock-bar" style="height: 40%;"></div>
+            <div class="mock-bar-day">W</div>
+          </div>
+          <div class="mock-bar-col now">
+            <div class="mock-bar now" style="height: 65%;"></div>
+            <div class="mock-bar-day">T</div>
+          </div>
+          <div class="mock-bar-col">
+            <div class="mock-bar off" style="height: 6%;"></div>
+            <div class="mock-bar-day">F</div>
+          </div>
+          <div class="mock-bar-col">
+            <div class="mock-bar off" style="height: 6%;"></div>
+            <div class="mock-bar-day">S</div>
+          </div>
+          <div class="mock-bar-col">
+            <div class="mock-bar off" style="height: 6%;"></div>
+            <div class="mock-bar-day">S</div>
+          </div>
+        </div>
+        <div class="mock-streak-row">
+          <span>🔥 12 day streak</span>
+        </div>
+      </div>
+      <div class="mock-nav">
+        <div class="mock-nav-item on"><div class="mock-nav-dot"></div>Stats</div>
+        <div class="mock-nav-item"><div class="mock-nav-dot"></div>Timer</div>
+        <div class="mock-nav-item"><div class="mock-nav-dot"></div>Schedule</div>
+        <div class="mock-nav-item"><div class="mock-nav-dot"></div>Settings</div>
+      </div>
     </div>
-    <div class="footer-links">
-      <a href="https://github.com/khemsok/tunl">github</a>
-      <a href="https://www.npmjs.com/package/@khemsok/tunl">npm</a>
-      <span style="color: var(--text-muted);">MIT</span>
+    </div>
+
+    <div class="carousel-labels">
+      <button class="carousel-label active" data-target="0">Timer</button>
+      <button class="carousel-label" data-target="1">Schedule</button>
+      <button class="carousel-label" data-target="2">Stats</button>
+    </div>
+    </div><!-- /mockup-inner -->
+  </div><!-- /mockup-area -->
+  </div><!-- /hero -->
+
+  <!-- Features — simple list -->
+  <div class="features anim anim-d5">
+    <div class="features-label">What it does</div>
+
+    <div class="feature-row">
+      <div class="feature-name">Timer</div>
+      <div class="feature-text">Pick a duration, hit start. Distracting sites are blocked until you're done.</div>
+    </div>
+
+    <div class="feature-row">
+      <div class="feature-name">Schedules</div>
+      <div class="feature-text">Set recurring focus windows so blocking happens automatically — no willpower required.</div>
+    </div>
+
+    <div class="feature-row">
+      <div class="feature-name">Streaks</div>
+      <div class="feature-text">Track your focus habit. Complete sessions to build streaks and see your progress over time.</div>
+    </div>
+
+    <div class="feature-row">
+      <div class="feature-name">Quit friction</div>
+      <div class="feature-text">Ending a session early isn't instant — there's a cooldown. Makes impulsive quitting harder.</div>
+    </div>
+
+    <div class="feature-row">
+      <div class="feature-name">Blocking</div>
+      <div class="feature-text">Already on a blocked site? You get redirected. Can't edit your blocklist mid-session either.</div>
+    </div>
+
+    <div class="feature-row">
+      <div class="feature-name">Free</div>
+      <div class="feature-text">No account, no tracking, no subscription. Everything stays in your browser.</div>
     </div>
   </div>
-</footer>
+
+  <!-- Bottom -->
+  <div class="bottom anim anim-d6">
+    <div class="bottom-left">Built for people who ship.</div>
+    <div class="bottom-links">
+      <a href="#">GitHub</a>
+      <a href="#">Chrome Web Store</a>
+    </div>
+  </div>
+
+</div>
 
 <script>
-// ── Stars ──
-const starsEl = document.getElementById('stars');
-for (let i = 0; i < 80; i++) {
-  const star = document.createElement('div');
-  star.className = 'star';
-  star.style.left = Math.random() * 100 + '%';
-  star.style.top = Math.random() * 100 + '%';
-  star.style.setProperty('--dur', (2 + Math.random() * 4) + 's');
-  star.style.setProperty('--delay', (Math.random() * 5) + 's');
-  star.style.setProperty('--brightness', (0.3 + Math.random() * 0.7).toString());
-  if (Math.random() > 0.85) {
-    star.style.width = '3px';
-    star.style.height = '3px';
-  }
-  starsEl.appendChild(star);
-}
+  const cards = document.querySelectorAll('.mock');
+  const labels = document.querySelectorAll('.carousel-label');
+  let order = [0, 1, 2];
+  let autoTimer;
+  let isAnimating = false;
 
-// ── Terminal animation ──
-const termEl = document.getElementById('terminal-art');
-const frames = [];
-const W = 56, H = 16;
-
-function hash(x, y) {
-  let h = (x * 374761393 + y * 668265263 + 1274126177) | 0;
-  h = ((h ^ (h >> 13)) * 1274126177) | 0;
-  return (h ^ (h >> 16)) >>> 0;
-}
-
-let tick = 0;
-function renderFrame() {
-  const grid = [];
-  for (let r = 0; r < H; r++) {
-    grid[r] = [];
-    for (let c = 0; c < W; c++) {
-      grid[r][c] = { ch: ' ', cls: '' };
-    }
-  }
-
-  // Timer at top
-  const mins = 23 - Math.floor(tick / 75) % 24;
-  const secs = 59 - (tick % 60);
-  const timeStr = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
-  const timerX = Math.floor((W - timeStr.length) / 2);
-  for (let i = 0; i < timeStr.length; i++) {
-    grid[0][timerX + i] = { ch: timeStr[i], cls: 't-ice' };
-  }
-
-  // Progress bar
-  const progress = ((tick % 375) / 375);
-  const barW = 30;
-  const barX = Math.floor((W - barW - 5) / 2);
-  const filled = Math.floor(progress * barW);
-  for (let i = 0; i < barW; i++) {
-    grid[1][barX + i] = { ch: i < filled ? '━' : '─', cls: i < filled ? 't-seafoam' : 't-muted' };
-  }
-  const pct = Math.round(progress * 100) + '%';
-  for (let i = 0; i < pct.length; i++) {
-    grid[1][barX + barW + 1 + i] = { ch: pct[i], cls: 't-dim' };
-  }
-
-  // Ground
-  for (let c = 0; c < W; c++) grid[H-1][c] = { ch: '─', cls: 't-dim' };
-
-  // Buildings
-  const buildings = [
-    {x:1, w:4, h:6}, {x:6, w:6, h:9}, {x:14, w:4, h:5},
-    {x:19, w:3, h:7}, {x:24, w:5, h:8}, {x:31, w:3, h:4},
-    {x:35, w:5, h:7}, {x:42, w:4, h:9}, {x:47, w:5, h:6},
-  ];
-
-  for (const b of buildings) {
-    for (let row = 0; row < b.h; row++) {
-      const gr = H - 2 - row;
-      if (gr < 3) continue;
-      for (let col = b.x; col < b.x + b.w && col < W; col++) {
-        if (row === b.h - 1) {
-          grid[gr][col] = { ch: col === b.x ? '┌' : col === b.x+b.w-1 ? '┐' : '─', cls: 't-dim' };
-        } else if (col === b.x || col === b.x + b.w - 1) {
-          grid[gr][col] = { ch: '│', cls: 't-dim' };
-        } else {
-          const s = hash(col, row);
-          const lit = ((tick + s) % 11) !== 0 && s % 3 < 2;
-          grid[gr][col] = { ch: '■', cls: lit ? 't-gold' : 't-muted' };
-        }
+  function updatePositions(exitIdx) {
+    cards.forEach((card, i) => {
+      const pos = order.indexOf(i);
+      if (exitIdx === i) {
+        card.dataset.pos = 'exit';
+      } else {
+        card.dataset.pos = String(pos);
       }
-    }
+    });
+
+    labels.forEach((l, i) => l.classList.toggle('active', order[0] === i));
   }
 
-  // Moon
-  const mx = 44, my = 3;
-  const moonChars = [
-    [1,'╭'], [2,'─'], [3,'─'], [4,'╮'],
-  ];
-  const moonMid = [
-    [0,'│'], [5,'│'],
-  ];
-  const moonBot = [
-    [1,'╰'], [2,'─'], [3,'─'], [4,'╯'],
-  ];
-  const mc = tick % 6 < 3 ? 't-ice' : 't-dim';
-  for (const [dx, ch] of moonChars) { if (mx+dx < W) grid[my][mx+dx] = {ch, cls: mc}; }
-  for (const [dx, ch] of moonMid) { if (mx+dx < W) grid[my+1][mx+dx] = {ch, cls: mc}; }
-  for (const [dx, ch] of moonBot) { if (mx+dx < W) grid[my+2][mx+dx] = {ch, cls: mc}; }
+  function advance() {
+    if (isAnimating) return;
+    isAnimating = true;
 
-  // Stars
-  for (let r = 2; r < H - 3; r++) {
-    for (let c = 0; c < W; c++) {
-      if (grid[r][c].ch !== ' ') continue;
-      const s = hash(c, r);
-      if (s % 100 < 6) {
-        const tw = (tick + s) % 7;
-        if (tw < 2) grid[r][c] = { ch: '✦', cls: 't-ice' };
-        else if (tw < 4) grid[r][c] = { ch: '·', cls: 't-dim' };
-      }
-    }
+    const exitingCardIdx = order[0];
+    const exitCard = cards[exitingCardIdx];
+
+    // Move front card to exit position
+    exitCard.dataset.pos = 'exit';
+
+    // Shift remaining cards forward
+    setTimeout(() => {
+      order.push(order.shift());
+      updatePositions(-1);
+      isAnimating = false;
+    }, 300);
   }
 
-  // Render
-  let html = '';
-  for (let r = 0; r < H; r++) {
-    for (let c = 0; c < W; c++) {
-      const cell = grid[r][c];
-      if (cell.cls) html += `<span class="${cell.cls}">${cell.ch}</span>`;
-      else html += cell.ch;
+  function goTo(targetIdx) {
+    if (isAnimating || order[0] === targetIdx) return;
+
+    // Rotate order until target is at front
+    while (order[0] !== targetIdx) {
+      order.push(order.shift());
     }
-    html += '\n';
+    updatePositions(-1);
   }
-  termEl.innerHTML = html;
-  tick++;
-  requestAnimationFrame(() => setTimeout(renderFrame, 800));
-}
-renderFrame();
 
-// ── Copy install ──
-function copyInstall() {
-  navigator.clipboard.writeText('npm install -g @khemsok/tunl');
-  const box = document.querySelector('.install-box .cmd');
-  const orig = box.textContent;
-  box.textContent = 'copied!';
-  setTimeout(() => box.textContent = orig, 1500);
-}
+  function startAuto() {
+    clearInterval(autoTimer);
+    autoTimer = setInterval(advance, 3200);
+  }
 
-// ── Scroll reveal ──
-const reveals = document.querySelectorAll('.reveal');
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.1 });
-reveals.forEach(el => observer.observe(el));
+  // Click front card to advance
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      advance();
+      startAuto();
+    });
+  });
+
+  // Click labels to jump
+  labels.forEach(label => {
+    label.addEventListener('click', () => {
+      goTo(parseInt(label.dataset.target));
+      startAuto();
+    });
+  });
+
+  updatePositions(-1);
+  startAuto();
 </script>
 
 </body>
