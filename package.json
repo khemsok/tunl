@@ -18,7 +18,11 @@
     "dev:config": "bun run src/cli.tsx --config",
     "dev:uninstall": "bun run src/cli.tsx --uninstall",
     "build": "bun build src/cli.tsx --outdir dist --target node",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun run build",
+    "build:ext": "bun build extension/src/popup/popup.ts --outfile extension/dist/popup.js --target browser && bun build extension/src/background/service-worker.ts --outfile extension/dist/service-worker.js --target browser && bun build extension/src/blocked/blocked.ts --outfile extension/dist/blocked.js --target browser",
+    "dev:ext": "bun run build:ext --watch",
+    "build:chrome": "cd chrome-extension && bun run build",
+    "zip:chrome": "cd chrome-extension && bun run zip"
   },
   "keywords": [
     "terminal",
@@ -46,6 +50,7 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/chrome": "^0.0.287",
     "@types/react": "^19.2.14",
     "typescript": "^5.4"
   }
